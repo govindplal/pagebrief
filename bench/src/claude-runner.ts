@@ -1,0 +1,202 @@
+// Runs one benchmark task through headless Claude Code (`claude -p`), which
+// authenticates with the user's Claude subscription. Context is stripped so the
+// token count is mostly the browser tool's output: no built-in tools, a
+// replacement system prompt, no user/project settings (so no hooks, plugins or
+// CLAUDE.md from the user's setup), and only the tool's MCP server.
+import { spawn, spawnSync } from "node:child_process";
+import fs from "node:fs";
+import readline from "node:readline";
+import { MCP_SERVER_NAME } from "./tools.ts";
+
+export interface RunSpec {
+  prompt: string;
+  systemPrompt: string;
+  model: string;
+  effort: string;
+  mcpConfigPath: string;
+  cwd: string;
+  timeoutMs: number;
+  maxBudgetUsd: number;
+  transcriptPath: string;
+}
+
+export interface RunOutcome {
+  status: "ok" | "error" | "timeout";
+  resultText: string;
+  error?: string;
+  wallSeconds: number;
+  cliDurationMs?: number;
+  numTurns?: number;
+  costUsd?: number;
+  inputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
+  outputTokens: number;
+  toolCalls: number;
+  toolCallsByName: Record<string, number>;
+  toolResultChars: number;
+  toolResultImages: number;
+  models: string[];
+}
+
+interface ModelUsage {
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheReadInputTokens?: number;
+  cacheCreationInputTokens?: number;
+}
+
+type ContentBlock =
+  | { type: "tool_use"; name: string }
+  | { type: "tool_result"; content?: string | Array<{ type: string; text?: string }> }
+  | { type: string };
+
+interface StreamMessage {
+  type: string;
+  subtype?: string;
+  message?: { content?: ContentBlock[] | string };
+  result?: string;
+  is_error?: boolean;
+  duration_ms?: number;
+  num_turns?: number;
+  total_cost_usd?: number;
+  modelUsage?: Record<string, ModelUsage>;
+}
+
+export function claudeArgs(spec: RunSpec): string[] {
+  return [
+    "-p",
+    spec.prompt,
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--model",
+    spec.model,
+    "--effort",
+    spec.effort,
+    "--system-prompt",
+    spec.systemPrompt,
+    "--tools",
+    "",
+    "--mcp-config",
+    spec.mcpConfigPath,
+    "--strict-mcp-config",
+    "--allowedTools",
+    `mcp__${MCP_SERVER_NAME}`,
+    "--permission-mode",
+    "dontAsk",
+    "--setting-sources",
+    "project",
+    "--disable-slash-commands",
+    "--no-session-persistence",
+    "--no-chrome",
+    "--max-budget-usd",
+    String(spec.maxBudgetUsd),
+  ];
+}
+
+/** Kill a process and its children (the MCP server and its browser). */
+function killTree(pid: number): void {
+  if (process.platform === "win32") spawnSync("taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore" });
+  else {
+    try {
+      process.kill(-pid, "SIGKILL");
+    } catch {
+      process.kill(pid, "SIGKILL");
+    }
+  }
+}
+
+export async function runClaude(spec: RunSpec): Promise<RunOutcome> {
+  const started = performance.now();
+  const out: RunOutcome = {
+    status: "error",
+    resultText: "",
+    wallSeconds: 0,
+    inputTokens: 0,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+    outputTokens: 0,
+    toolCalls: 0,
+    toolCallsByName: {},
+    toolResultChars: 0,
+    toolResultImages: 0,
+    models: [],
+  };
+  const transcript = fs.createWriteStream(spec.transcriptPath);
+  const child = spawn("claude", claudeArgs(spec), {
+    cwd: spec.cwd,
+    stdio: ["ignore", "pipe", "pipe"],
+    detached: process.platform !== "win32",
+  });
+
+  let stderr = "";
+  child.stderr.on("data", (d: Buffer) => (stderr += d.toString()));
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    if (child.pid) killTree(child.pid);
+  }, spec.timeoutMs);
+
+  let sawResult = false;
+  const lines = readline.createInterface({ input: child.stdout });
+  for await (const line of lines) {
+    if (!line.trim()) continue;
+    transcript.write(line + "\n");
+    let msg: StreamMessage;
+    try {
+      msg = JSON.parse(line) as StreamMessage;
+    } catch {
+      continue;
+    }
+    const content = Array.isArray(msg.message?.content) ? msg.message.content : [];
+    if (msg.type === "assistant") {
+      for (const b of content) {
+        if (b.type === "tool_use" && "name" in b) {
+          out.toolCalls++;
+          out.toolCallsByName[b.name] = (out.toolCallsByName[b.name] ?? 0) + 1;
+        }
+      }
+    } else if (msg.type === "user") {
+      for (const b of content) {
+        if (b.type !== "tool_result" || !("content" in b)) continue;
+        if (typeof b.content === "string") out.toolResultChars += b.content.length;
+        else for (const part of b.content ?? []) {
+          if (part.type === "text") out.toolResultChars += part.text?.length ?? 0;
+          else if (part.type === "image") out.toolResultImages++;
+        }
+      }
+    } else if (msg.type === "result") {
+      sawResult = true;
+      out.resultText = msg.result ?? "";
+      out.status = msg.is_error ? "error" : "ok";
+      if (msg.is_error) out.error = `${msg.subtype ?? "error"}: ${(msg.result ?? "").slice(0, 300)}`;
+      out.cliDurationMs = msg.duration_ms;
+      out.numTurns = msg.num_turns;
+      out.costUsd = msg.total_cost_usd;
+      for (const [model, u] of Object.entries(msg.modelUsage ?? {})) {
+        out.models.push(model);
+        out.inputTokens += u.inputTokens ?? 0;
+        out.outputTokens += u.outputTokens ?? 0;
+        out.cacheReadTokens += u.cacheReadInputTokens ?? 0;
+        out.cacheWriteTokens += u.cacheCreationInputTokens ?? 0;
+      }
+    }
+  }
+
+  const code: number | null = await new Promise((resolve) => {
+    if (child.exitCode !== null) resolve(child.exitCode);
+    else child.on("close", resolve);
+  });
+  clearTimeout(timer);
+  transcript.end();
+  out.wallSeconds = (performance.now() - started) / 1000;
+  if (timedOut) {
+    out.status = "timeout";
+    out.error = `killed after ${spec.timeoutMs / 1000}s`;
+  } else if (!sawResult) {
+    out.status = "error";
+    out.error = `exit ${code}, no result message. stderr: ${stderr.slice(0, 500)}`;
+  }
+  return out;
+}
