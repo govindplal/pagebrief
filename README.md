@@ -28,10 +28,15 @@ Requires the Claude Code CLI, logged in, and Google Chrome. Runs spend the logge
 
 ### Results
 
-The full baseline has not been run yet. Smoke run, 2026-11-09, Playwright MCP 0.0.84, `claude-opus-5-5` at medium effort, 3 tasks x 1:
+Baseline, repeat 1 of 3 (2026-11-09): all 60 tasks once per tool, `claude-sonnet-5-5` at medium effort, headless Chrome on Windows 11. Repeats 2 and 3 are still to run. Full report: [docs/results/2026-11-09-baseline-rep1.md](docs/results/2026-11-09-baseline-rep1.md).
 
-| Tool | Runs | Success | Median tokens/task | Median s/task | Mean tool calls |
-|---|---|---|---|---|---|
-| playwright-mcp | 3 | 100% | 18,679 | 10.9 | 3.3 |
+| Tool | Runs | Success | Median tokens/task | Mean tokens/task | Median s/task | Mean tool calls |
+|---|---|---|---|---|---|---|
+| Playwright MCP 0.0.84 | 60 | 95% | 26,402 | 29,550 | 14.3 | 3.0 |
+| agent-browser 0.41.2 | 60 | 95% | 77,514 | 108,991 | 17.1 | 2.3 |
 
-Three tasks don't support conclusions. One observation already shapes the design: about 8k tokens per turn are the baseline's system prompt plus 25 tool definitions, so on simple lookups most tokens are fixed overhead rather than page content.
+All six failures are the three openlibrary.org tasks, for both tools: since the answer key was written the site sends headless browsers to a human-verification page. Without them both tools score 100% on 57 tasks.
+
+What this says about the target:
+- Playwright MCP is the stronger baseline on tokens. agent-browser makes fewer calls but sends ~22k tokens of tool definitions (29 tools, ~88k characters) on every turn, about 3x Playwright's.
+- On Playwright MCP, a median task is 3 turns, ~24k cache-read tokens and ~2k characters of page content. Most of the cost is the tool definitions re-sent each turn, so 10x means about 2.6k tokens per task: a handful of small tool definitions and usually a single `open(url)` call.

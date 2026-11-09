@@ -81,7 +81,11 @@ function summarize(tool: string, rs: RunRecord[]): Summary {
 }
 
 export function renderReport(records: RunRecord[], metas: RunMeta[]): string {
-  const tools = [...new Set(records.map((r) => r.tool))];
+  // Tools in the order the run declared them (the first is the baseline), not
+  // the order concurrent runs happened to finish in.
+  const tools = [...new Set([...metas.map((m) => m.tool), ...records.map((r) => r.tool)])].filter((t) =>
+    records.some((r) => r.tool === t),
+  );
   const byTool = new Map(tools.map((t) => [t, records.filter((r) => r.tool === t)]));
   const summaries = tools.map((t) => summarize(t, byTool.get(t)!));
   const base = summaries[0];

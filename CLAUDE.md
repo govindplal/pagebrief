@@ -39,6 +39,9 @@ Still to build:
 - The runner reads Claude Code's `rate_limit_event` (5-hour and 7-day utilization) and stops dispatching at `--stop-at`; limit-hit runs aren't recorded, so `--resume` reruns them. Jobs are repeat-major and interleave tools, so a partial run is still balanced.
 - All runs share one empty agent cwd: the CLI puts cwd in the system prompt, and a fixed one lets the prompt cache serve the tool definitions across runs (big quota saving). `ENABLE_TOOL_SEARCH=false` keeps large tool sets (agent-browser's ~88k chars of definitions) loaded instead of deferred behind a ToolSearch tool we don't provide.
 - agent-browser keeps a browser daemon per session after its MCP server exits: each run gets its own `AGENT_BROWSER_SESSION` and the runner calls `agent-browser --session <s> close` afterwards. Its MCP tool names are `agent_browser_*` (`mcp call open` fails; use `agent_browser_open`).
+- Concurrency 3 ran this 16 GB Windows machine out of memory after ~220 runs: `claude` then exits 0xC0000142 (3221225794) instantly with no output. The runner now treats that as `launch_failed` (not recorded, stops after 3 in a row); prefer `--concurrency 2`.
+- openlibrary.org started serving a human-verification page to headless browsers (2026-11-09); its 3 tasks fail for every tool until replaced.
+- Report order: the first tool in `--tool` is the baseline column.
 - Creating a public GitHub repo is blocked by the auto-mode classifier; the repo was created private.
 - Answer key: verify against page HTML or the site's API, never from memory. Parse downloaded data with regex/JSON.parse only; never `eval` it (auto mode blocks this, and rightly).
 - webscraper.io cards put the price before the title; parse whole cards, not title-then-price.

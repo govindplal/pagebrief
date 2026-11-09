@@ -160,6 +160,7 @@ async function main(): Promise<void> {
   let stopReason: string | null = null;
   let next = 0;
   let finished = 0;
+  let launchFailuresInARow = 0;
   const concurrency = Math.max(1, Number(opts.concurrency));
   console.log(
     `${meta.runId}: ${jobs.length} runs to go (${records.length} already done), ${meta.tools.map((t) => t.tool).join(" + ")}, ` +
@@ -195,6 +196,16 @@ async function main(): Promise<void> {
       fs.rmSync(workDir, { recursive: true, force: true });
 
       if (outcome.rateLimit) usage = outcome.rateLimit;
+      if (outcome.status === "launch_failed") {
+        launchFailuresInARow++;
+        console.log(`[launch failed] ${tag}: ${outcome.error} (not recorded; it reruns on --resume)`);
+        if (launchFailuresInARow >= 3) {
+          stopReason = "3 runs in a row failed to start (low memory?)";
+          break;
+        }
+        continue;
+      }
+      launchFailuresInARow = 0;
       if (outcome.status === "quota") {
         stopReason = `usage limit hit during ${tag} (not recorded; it reruns on --resume)`;
         console.log(`[quota] ${tag}: ${outcome.error ?? outcome.resultText.slice(0, 200)}`);
@@ -257,7 +268,11 @@ async function main(): Promise<void> {
   }
 
   await Promise.all(Array.from({ length: Math.min(concurrency, jobs.length) }, worker));
-  fs.rmSync(scratchRoot, { recursive: true, force: true });
+  try {
+    fs.rmSync(scratchRoot, { recursive: true, force: true });
+  } catch {
+    // a browser still holding a file on Windows; the OS temp cleaner gets it later
+  }
 
   const report = renderReport(records, reportMetas(meta));
   fs.writeFileSync(path.join(outDir, "report.md"), report);

@@ -127,3 +127,18 @@ Most of those tokens are fixed cost: ~8k tokens of system prompt + 25 tool defin
 - Shrinking page output alone cannot reach 10x on simple lookups. The levers are fewer tool definitions (a handful, not 25), fewer turns (`open(url)` returning typed content in one call), and compact results.
 - Gains should be largest on multi-page and aggregate tasks, where the baseline needs many turns. The full baseline will show whether that holds.
 - Report estimated cost alongside raw tokens: re-read tool definitions are cache reads, billed at about a tenth of the input price.
+
+## Baseline, repeat 1 (2026-11-09)
+
+60 tasks x 1 per tool, Sonnet 5.5, headless Chrome. Report: `docs/results/2026-11-09-baseline-rep1.md`.
+
+| Tool | Success | Median tokens/task | Median s/task | Mean tool calls |
+|---|---|---|---|---|
+| Playwright MCP 0.0.84 | 95% | 26,402 | 14.3 | 3.0 |
+| agent-browser 0.41.2 | 95% | 77,514 | 17.1 | 2.3 |
+
+- The 10x headline target against Playwright MCP means a median of about 2,600 tokens per task at 95%+ success.
+- Proposed non-headline targets, to confirm: median seconds per task at or below Playwright MCP's (14.3 s); mean tool calls at or below 1.5.
+- agent-browser is the costlier baseline: its tool definitions are ~3x Playwright's, re-sent every turn. Review note 1 holds anyway: report both.
+- Open Library added a human-verification page for headless browsers; its three tasks fail for both tools and should be replaced with another stable site.
+

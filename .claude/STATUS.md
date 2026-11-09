@@ -3,18 +3,20 @@
 Updated: 2026-11-09
 
 ## Now
-- Benchmark harness (`bench/`): 60 verified tasks on 20 sites; multi-tool runs, repeat-major and interleaved; usage guard (stops at 85% of the 5-hour window) and `--resume`. `npm test` 12/12, `npm run lint` clean.
-- Baselines: Playwright MCP 0.0.84 and agent-browser 0.41.2. Smoke (Sonnet 5.5, 3 tasks x 1): both 3/3; Playwright ~27k median tokens, agent-browser ~74k (its 29 tool definitions are ~88k chars). About 0.33% of the 5-hour window per run on average.
-- Full run started 2026-11-09 12:01: `results/2026-11-09T12-01-49-playwright-mcp+agent-browser` (360 runs, Sonnet 5.5, concurrency 3). It is expected to stop at the 85% guard partway through repeat 2; finish with `npm run bench -- --resume results/2026-11-09T12-01-49-playwright-mcp+agent-browser` after the window resets.
+- Benchmark harness (`bench/`): 60 verified tasks on 20 sites; multi-tool runs, repeat-major and interleaved; usage guard (stops at 85% of the 5-hour window), `--resume`, and launch failures are not recorded (stops after 3 in a row). `npm test` 12/12, lint clean.
+- Baseline repeat 1 complete (Sonnet 5.5): Playwright MCP 95%, 26.4k median tokens, 14.3 s; agent-browser 95%, 77.5k, 17.1 s. Both fail only the 3 openlibrary.org tasks (site now serves a human-verification page). In README, docs/spec.md and docs/results/2026-11-09-baseline-rep1.md.
+- Run dir `results/2026-11-09T12-01-49-playwright-mcp+agent-browser` (gitignored): 223 real runs (rep 1 complete, rep 2: 52 + 51). 137 records from failed launches were removed (backup `runs.with-launch-failures.jsonl.bak`). Claude Code killed the run for low system memory; 5-hour usage was at 60% then.
 - Remote: github.com/govindplal/agentic-browser (private; public creation was blocked by the auto-mode classifier).
 - No browser-layer code yet.
 
 ## Next
-1. When the run stops: put the results table in README and docs/spec.md, set the non-headline targets, commit and push. Resume the remaining repeats in a later 5-hour window.
-2. Start the engine: CDP driver + JSON capture + `open(url)` returning typed content in one call. Ask before installing `ws`/`devtools-protocol`.
+1. Finish repeats 2-3, only when the user asks (Claude Code said not to restart it unprompted): `npm run bench -- --resume results/2026-11-09T12-01-49-playwright-mcp+agent-browser --concurrency 2`. ~137 runs, ~45% of a 5-hour window.
+2. Replace openlibrary.org with another stable site (3 verified tasks); rerun just those tasks for both tools.
+3. Confirm the proposed non-headline targets (docs/spec.md), then start the engine: CDP driver + JSON capture + `open(url)` returning typed content in one call. Ask before installing `ws`/`devtools-protocol`.
 
 ## Open questions / blocked on the user
-- Make the GitHub repo public? (They have to do it or allow it; the classifier blocks it.)
+- Go-ahead to resume repeats 2-3 (and at what concurrency).
+- Make the GitHub repo public?
 - Spec open questions: target users, map store home, decision model, project name.
 
 ## Learned this project (not yet in CLAUDE.md)

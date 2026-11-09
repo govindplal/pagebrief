@@ -25,7 +25,9 @@ export interface RunSpec {
 
 export interface RunOutcome {
   /** "quota": the subscription limit was hit; the run says nothing about the tool and should be retried. */
-  status: "ok" | "error" | "timeout" | "quota";
+  // "launch_failed": the CLI died before producing anything (e.g. Windows 0xC0000142 when
+  // memory is short); like "quota", the run says nothing about the tool and should be retried.
+  status: "ok" | "error" | "timeout" | "quota" | "launch_failed";
   resultText: string;
   error?: string;
   wallSeconds: number;
@@ -210,6 +212,8 @@ export async function runClaude(spec: RunSpec): Promise<RunOutcome> {
   } else if (!sawResult) {
     out.status = "error";
     out.error = `exit ${code}, no result message. stderr: ${stderr.slice(0, 500)}`;
+    const tokens = out.inputTokens + out.outputTokens + out.cacheReadTokens + out.cacheWriteTokens;
+    if (tokens === 0 && out.toolCalls === 0) out.status = "launch_failed";
   }
   const limitHit = out.rateLimit?.status === "rejected" || QUOTA_ERROR.test(out.error ?? "");
   // A limit message can also arrive as a normal result with no ANSWER line.
