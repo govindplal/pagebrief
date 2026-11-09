@@ -5,6 +5,8 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { findChrome } from "../../src/cdp/chrome.ts";
 
 export const MCP_SERVER_NAME = "browser";
 
@@ -28,30 +30,20 @@ export interface ToolUnderTest {
 const packageVersion = (pkg: string): string =>
   (JSON.parse(fs.readFileSync(path.resolve("node_modules", pkg, "package.json"), "utf8")) as { version: string }).version;
 
-/** Installed Google Chrome, so tools that launch a browser by path use the same one Playwright's "chrome" channel finds. */
-export function findChrome(): string {
-  const candidates = [
-    process.env.CHROME_PATH,
-    ...(process.platform === "win32"
-      ? [
-          path.join(process.env.PROGRAMFILES ?? "C:\\Program Files", "Google\\Chrome\\Application\\chrome.exe"),
-          path.join(process.env["PROGRAMFILES(X86)"] ?? "C:\\Program Files (x86)", "Google\\Chrome\\Application\\chrome.exe"),
-          path.join(process.env.LOCALAPPDATA ?? "", "Google\\Chrome\\Application\\chrome.exe"),
-        ]
-      : process.platform === "darwin"
-        ? ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"]
-        : ["/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/opt/google/chrome/chrome"]),
-  ];
-  const found = candidates.find((p) => p && fs.existsSync(p));
-  if (!found) throw new Error("Google Chrome not found; set CHROME_PATH");
-  return found;
-}
-
 const agentBrowserCli = (): string => path.resolve("node_modules/agent-browser/bin/agent-browser.js");
 /** agent-browser session names allow letters, digits, hyphens and underscores. */
 const agentBrowserSession = (workDir: string): string => `bench_${path.basename(workDir).replace(/[^A-Za-z0-9_-]/g, "_")}`;
 
 export const TOOLS: Record<string, ToolUnderTest> = {
+  "agentic-browser": {
+    id: "agentic-browser",
+    description: "This project: raw CDP on headless installed Chrome, 3 read-only tools (open, find, read)",
+    version: () => (JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8")) as { version: string }).version,
+    server: () => ({
+      command: process.execPath,
+      args: ["--import", pathToFileURL(path.resolve("node_modules/tsx/dist/loader.mjs")).href, path.resolve("src/cli.ts"), "mcp"],
+    }),
+  },
   "playwright-mcp": {
     id: "playwright-mcp",
     description: "Playwright MCP with default settings (accessibility snapshots), headless installed Chrome",

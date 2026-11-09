@@ -1,24 +1,35 @@
 {
   "name": "agentic-browser",
-  "version": "1.0.0",
-  "description": "Agent-native browser layer: typed page views, actions and diffs for AI agents over MCP",
+  "version": "0.1.0",
+  "description": "An MCP browser layer that gives AI agents any web page as compact, typed text over raw CDP, with a benchmark against Playwright MCP and agent-browser",
+  "author": "Govind P Lal",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/govindplal/agentic-browser"
+  },
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "test": "node --import tsx --test \"bench/**/*.test.ts\"",
+    "start": "tsx src/cli.ts mcp",
+    "open": "tsx src/cli.ts open",
+    "test": "node --import tsx --test \"bench/**/*.test.ts\" \"src/**/*.test.ts\"",
     "lint": "tsc --noEmit",
     "bench": "tsx bench/src/run.ts",
     "bench:report": "tsx bench/src/report.ts"
   },
-  "license": "Apache-2.0",
-  "type": "module",
-  "private": true,
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "tsx": "4.23.15",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@playwright/mcp": "0.0.84",
     "@types/node": "24.19.2",
     "agent-browser": "0.41.2",
-    "tsx": "4.23.15",
     "typescript": "6.0.2"
   }
 }

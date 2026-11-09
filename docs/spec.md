@@ -45,7 +45,7 @@ The agent only ever talks to the MCP server, so the engine underneath can be swa
 
 - No engine of our own. Drive Chromium directly over CDP, the protocol Chrome's DevTools uses. Add Lightpanda later if speed or memory becomes the bottleneck.
 - Diffs, not pages. After every action the server returns only what changed.
-- Model tiers. Plain code does most of the work. A small decision model (e.g. Laya, 421M parameters, open weights, Apache 2.0) classifies elements and checks maps. A Gemma-class model only names unusual actions. No large model sits on the agent's path.
+- Model tiers. Plain code does most of the work. A small open-weights decision model (to be chosen, see open questions) classifies elements and checks maps. A Gemma-class model only names unusual actions. No large model sits on the agent's path.
 
 ## Shared maps, privacy and safety
 
@@ -108,7 +108,7 @@ The biggest risk is a crowded space; the answer is being a live layer for every 
 Open questions:
 - [ ] Which developers feel this pain most: price trackers, job-application bots or portal automation?
 - [ ] Where does the shared map store live, and who reviews contributions?
-- [ ] Which decision model for version 1: Laya (open weights) or Jev (paid API)?
+- [ ] Which small decision model for version 1: open weights or a paid API?
 - [ ] Project name
 
 ## Review notes (2026-11-09, before any code)
@@ -117,7 +117,7 @@ Open questions:
 2. **"Typed content" hides the hard part.** Mapping a page's JSON to named fields needs a model on the first visit to each page type. Cache hit rate is what makes 10x real; say so.
 3. **Bot detection is understated.** Headless Chromium over CDP is detectable (`navigator.webdriver`, `Runtime.enable` side effects). Pick benchmark sites that don't block, or run headed.
 4. **Repeat visits are the wedge.** The map cache pays off only when agents revisit page types (price tracking, job listings), which answers the first open question.
-5. Laya / Jev are unverified here; keep the "name this field" model call behind an interface.
+5. Keep the "name this field" model call behind an interface so the model choice stays open.
 
 ## First measurement (2026-11-09, smoke run, 3 tasks x 1, not the baseline)
 
@@ -142,3 +142,6 @@ Most of those tokens are fixed cost: ~8k tokens of system prompt + 25 tool defin
 - agent-browser is the costlier baseline: its tool definitions are ~3x Playwright's, re-sent every turn. Review note 1 holds anyway: report both.
 - Open Library added a human-verification page for headless browsers; its three tasks fail for both tools and should be replaced with another stable site.
 
+## Engine v0.1 (2026-11-09)
+
+Raw CDP on headless installed Chrome with three read-only tools: `open(url)` (title, JSON-LD, JSON the page loaded, forms, first ~3k characters of text), `find(pattern)` and `read(from)`. First smoke run: books.toscrape.com category lookup correct in 13,820 tokens (Playwright MCP 34,192, agent-browser 69,768 on the same task), but 24.5 s against 19.8 s. Full 60-task run pending.

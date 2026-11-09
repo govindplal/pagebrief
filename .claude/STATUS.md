@@ -3,20 +3,20 @@
 Updated: 2026-11-09
 
 ## Now
-- Benchmark harness (`bench/`): 60 verified tasks on 20 sites; multi-tool runs, repeat-major and interleaved; usage guard (stops at 85% of the 5-hour window), `--resume`, and launch failures are not recorded (stops after 3 in a row). `npm test` 12/12, lint clean.
-- Baseline repeat 1 complete (Sonnet 5.5): Playwright MCP 95%, 26.4k median tokens, 14.3 s; agent-browser 95%, 77.5k, 17.1 s. Both fail only the 3 openlibrary.org tasks (site now serves a human-verification page). In README, docs/spec.md and docs/results/2026-11-09-baseline-rep1.md.
-- Run dir `results/2026-11-09T12-01-49-playwright-mcp+agent-browser` (gitignored): 223 real runs (rep 1 complete, rep 2: 52 + 51). 137 records from failed launches were removed (backup `runs.with-launch-failures.jsonl.bak`). Claude Code killed the run for low system memory; 5-hour usage was at 60% then.
-- Remote: github.com/govindplal/agentic-browser (private; public creation was blocked by the auto-mode classifier).
-- No browser-layer code yet.
+- Engine v0.1 built: raw CDP (built-in WebSocket) on headless installed Chrome, JSON capture, `open` / `find` / `read`, MCP server, CLI; registered as `agentic-browser` in `bench/src/tools.ts`. `npm test` 20/20 (incl. end-to-end against real Chrome), typecheck clean.
+- First smoke: bts-2 correct in 13,820 tokens (Playwright 34,192, agent-browser 69,768 on the same task), but 24.5 s vs 19.8 s. The other 2 smoke tasks didn't run: the usage guard stopped at 81% of the 5-hour window.
+- Baseline repeat 1 complete (Sonnet 5.5): Playwright MCP 95%, 26.4k median tokens, 14.3 s; agent-browser 95%, 77.5k, 17.1 s. Openlibrary tasks fail for both (bot check). Baseline run dir `results/2026-11-09T12-01-49-playwright-mcp+agent-browser` has repeat 2 partial (52 + 51).
+- README rewritten for outside readers (architecture decisions table); repo is private on GitHub.
 
 ## Next
-1. Finish repeats 2-3, only when the user asks (Claude Code said not to restart it unprompted): `npm run bench -- --resume results/2026-11-09T12-01-49-playwright-mcp+agent-browser --concurrency 2`. ~137 runs, ~45% of a 5-hour window.
-2. Replace openlibrary.org with another stable site (3 verified tasks); rerun just those tasks for both tools.
-3. Confirm the proposed non-headline targets (docs/spec.md), then start the engine: CDP driver + JSON capture + `open(url)` returning typed content in one call. Ask before installing `ws`/`devtools-protocol`.
+1. After the 5-hour window resets: run the engine on all 60 tasks x 1 (`npm run bench -- --tool agentic-browser --repeats 1 --concurrency 2`, ~60 runs) and compare with baseline repeat 1 via `npm run bench:report`.
+2. Look at failures and seconds: the network-quiet wait (500 ms quiet, 5 s cap) may make open() slower than Playwright; tune the text budget (3,000 chars) and link handling.
+3. Replace openlibrary.org with another stable site; finish baseline repeats 2-3 (`--resume`, concurrency 2).
+4. Map cache per page type; typed fields from captured JSON.
 
 ## Open questions / blocked on the user
-- Go-ahead to resume repeats 2-3 (and at what concurrency).
-- Make the GitHub repo public?
+- Make the GitHub repo public (the user's call)?
+- Confirm proposed non-headline targets in docs/spec.md (≤14.3 s median, ≤1.5 mean tool calls).
 - Spec open questions: target users, map store home, decision model, project name.
 
 ## Learned this project (not yet in CLAUDE.md)
