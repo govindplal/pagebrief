@@ -1,7 +1,14 @@
 // Benchmark runner.
 //   npm run bench -- --tool playwright-mcp --tasks bts-1,hn-1 --repeats 1
-//   npm run bench -- --tool playwright-mcp            (all tasks, 3 repeats)
+//   npm run bench -- --tool playwright-mcp,agent-browser          (all tasks, 3 repeats)
+//   npm run bench -- --resume results/<runId> [--repeats 3]       (continue a stopped run)
 // Writes results/<runId>/{meta.json,runs.jsonl,report.md,transcripts/}.
+//
+// Runs use the user's Claude subscription. Each run reports the subscription's
+// 5-hour and 7-day usage; the runner stops dispatching new runs once either
+// passes --stop-at / --stop-at-weekly, so a long benchmark never exhausts the
+// limit. Runs that hit the limit anyway are not recorded and are retried on
+// --resume.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
@@ -9,7 +16,8 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { check, extractAnswer } from "./check.ts";
 import { runClaude } from "./claude-runner.ts";
-import { renderReport, type RunRecord } from "./report.ts";
+import { jobKey, planJobs, type RateLimit } from "./plan.ts";
+import { renderReport, type RunMeta, type RunRecord } from "./report.ts";
 import { loadTasks, type Task } from "./tasks.ts";
 import { getTool, MCP_SERVER_NAME } from "./tools.ts";
 
@@ -26,15 +34,34 @@ const { values: opts } = parseArgs({
     tool: { type: "string", default: "playwright-mcp" },
     tasks: { type: "string" },
     sites: { type: "string" },
-    repeats: { type: "string", default: "3" },
-    model: { type: "string", default: "claude-opus-5-5" },
+    repeats: { type: "string" },
+    model: { type: "string", default: "claude-sonnet-5-5" },
     effort: { type: "string", default: "medium" },
     concurrency: { type: "string", default: "1" },
-    timeout: { type: "string", default: "300" },
-    "max-budget": { type: "string", default: "2" },
+    timeout: { type: "string", default: "180" },
+    "max-budget": { type: "string", default: "0.5" },
+    "stop-at": { type: "string", default: "0.85" },
+    "stop-at-weekly": { type: "string", default: "0.9" },
+    resume: { type: "string" },
     out: { type: "string", default: "results" },
   },
 });
+
+interface Meta {
+  runId: string;
+  tools: { tool: string; toolVersion: string; toolDescription: string }[];
+  model: string;
+  effort: string;
+  repeats: number;
+  taskIds: string[];
+  claudeVersion: string;
+  gitSha: string | null;
+  platform: string;
+  startedAt: string;
+  systemPrompt: string;
+  timeoutSeconds: number;
+  maxBudgetUsd: number;
+}
 
 function selectTasks(all: Task[]): Task[] {
   let tasks = all;
@@ -60,60 +87,119 @@ function gitSha(): string | null {
   }
 }
 
-async function main(): Promise<void> {
-  const tool = getTool(opts.tool!);
-  const tasks = selectTasks(loadTasks());
-  const repeats = Number(opts.repeats);
-  const concurrency = Math.max(1, Number(opts.concurrency));
-  const runId = `${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}-${tool.id}`;
-  const outDir = path.resolve(opts.out!, runId);
-  const transcripts = path.join(outDir, "transcripts");
-  fs.mkdirSync(transcripts, { recursive: true });
-  const scratchRoot = path.join(os.tmpdir(), "agentic-browser-bench", runId);
+const readRecords = (file: string): RunRecord[] =>
+  fs.existsSync(file)
+    ? fs.readFileSync(file, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l) as RunRecord)
+    : [];
 
-  const meta = {
+const reportMetas = (m: Meta): RunMeta[] =>
+  m.tools.map((t) => ({ runId: m.runId, tool: t.tool, toolVersion: t.toolVersion, model: m.model, effort: m.effort }));
+
+const pctOf = (x: number | null): string => (x === null ? "?" : `${Math.round(x * 100)}%`);
+
+function newMeta(): Meta {
+  const tools = opts.tool!.split(",").map((s) => getTool(s.trim()));
+  const runId = `${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}-${tools.map((t) => t.id).join("+")}`;
+  return {
     runId,
-    tool: tool.id,
-    toolVersion: tool.version(),
-    toolDescription: tool.description,
-    model: opts.model,
-    effort: opts.effort,
-    repeats,
-    taskIds: tasks.map((t) => t.id),
+    tools: tools.map((t) => ({ tool: t.id, toolVersion: t.version(), toolDescription: t.description })),
+    model: opts.model!,
+    effort: opts.effort!,
+    repeats: Number(opts.repeats ?? 3),
+    taskIds: selectTasks(loadTasks()).map((t) => t.id),
     claudeVersion: execFileSync("claude", ["--version"], { encoding: "utf8" }).trim(),
     gitSha: gitSha(),
     platform: `${process.platform} ${os.release()}`,
     startedAt: new Date().toISOString(),
     systemPrompt: SYSTEM_PROMPT,
+    timeoutSeconds: Number(opts.timeout),
+    maxBudgetUsd: Number(opts["max-budget"]),
   };
+}
+
+async function main(): Promise<void> {
+  let outDir: string;
+  let meta: Meta;
+  if (opts.resume) {
+    outDir = path.resolve(opts.resume);
+    meta = JSON.parse(fs.readFileSync(path.join(outDir, "meta.json"), "utf8")) as Meta;
+    if (opts.repeats) meta.repeats = Number(opts.repeats);
+    for (const t of meta.tools) {
+      const installed = getTool(t.tool).version();
+      if (installed !== t.toolVersion) throw new Error(`${t.tool} is ${installed} now, run used ${t.toolVersion}`);
+    }
+  } else {
+    meta = newMeta();
+    outDir = path.resolve(opts.out!, meta.runId);
+  }
+  const transcripts = path.join(outDir, "transcripts");
+  fs.mkdirSync(transcripts, { recursive: true });
   fs.writeFileSync(path.join(outDir, "meta.json"), JSON.stringify(meta, null, 2));
 
-  const jobs = tasks.flatMap((task) => Array.from({ length: repeats }, (_, i) => ({ task, rep: i + 1 })));
   const runsFile = path.join(outDir, "runs.jsonl");
-  const records: RunRecord[] = [];
+  const records = readRecords(runsFile);
+  const done = new Set(records.map((r) => jobKey(r.tool, r.taskId, r.rep)));
+  const allTasks = loadTasks();
+  const tasks = meta.taskIds.map((id) => {
+    const t = allTasks.find((x) => x.id === id);
+    if (!t) throw new Error(`task ${id} from meta.json no longer exists`);
+    return t;
+  });
+  const jobs = planJobs(tasks, meta.tools.map((t) => t.tool), meta.repeats, done);
+
+  // One shared, empty working directory for every run: the CLI puts its cwd in
+  // the system prompt, so a fixed cwd keeps the prompt prefix identical across
+  // runs and lets the prompt cache serve it. Per-run files live in scratch dirs.
+  const scratchRoot = path.join(os.tmpdir(), "agentic-browser-bench", meta.runId);
+  const agentCwd = path.join(scratchRoot, "agent");
+  fs.mkdirSync(agentCwd, { recursive: true });
+
+  const stopAt = Number(opts["stop-at"]);
+  const stopAtWeekly = Number(opts["stop-at-weekly"]);
+  let usage: RateLimit | null = null;
+  let stopReason: string | null = null;
   let next = 0;
-  let done = 0;
-  console.log(`${runId}: ${jobs.length} runs (${tasks.length} tasks x ${repeats}), model ${opts.model}, effort ${opts.effort}`);
+  let finished = 0;
+  const concurrency = Math.max(1, Number(opts.concurrency));
+  console.log(
+    `${meta.runId}: ${jobs.length} runs to go (${records.length} already done), ${meta.tools.map((t) => t.tool).join(" + ")}, ` +
+      `model ${meta.model}, effort ${meta.effort}, stop at ${pctOf(stopAt)} of the 5-hour limit`,
+  );
 
   async function worker(): Promise<void> {
-    while (next < jobs.length) {
-      const { task, rep } = jobs[next++]!;
-      const cwd = path.join(scratchRoot, `${task.id}-${rep}`);
-      fs.mkdirSync(cwd, { recursive: true });
-      const mcpConfigPath = path.join(cwd, "mcp.json");
-      fs.writeFileSync(mcpConfigPath, JSON.stringify({ mcpServers: { [MCP_SERVER_NAME]: tool.server(cwd) } }));
+    while (next < jobs.length && !stopReason) {
+      const { task, tool: toolId, rep } = jobs[next++]!;
+      const tool = getTool(toolId);
+      const workDir = path.join(scratchRoot, `${toolId}-${task.id}-${rep}`);
+      fs.mkdirSync(workDir, { recursive: true });
+      const mcpConfigPath = path.join(workDir, "mcp.json");
+      fs.writeFileSync(mcpConfigPath, JSON.stringify({ mcpServers: { [MCP_SERVER_NAME]: tool.server(workDir) } }));
+      const tag = `${toolId} ${task.id} #${rep}`;
 
       const outcome = await runClaude({
         prompt: `Start URL: ${task.url}\n\nQuestion: ${task.question}`,
         systemPrompt: SYSTEM_PROMPT,
-        model: opts.model!,
-        effort: opts.effort!,
+        model: meta.model,
+        effort: meta.effort,
         mcpConfigPath,
-        cwd,
-        timeoutMs: Number(opts.timeout) * 1000,
-        maxBudgetUsd: Number(opts["max-budget"]),
-        transcriptPath: path.join(transcripts, `${task.id}-${rep}.jsonl`),
+        cwd: agentCwd,
+        timeoutMs: meta.timeoutSeconds * 1000,
+        maxBudgetUsd: meta.maxBudgetUsd,
+        transcriptPath: path.join(transcripts, `${toolId}-${task.id}-${rep}.jsonl`),
       });
+      try {
+        tool.cleanup?.(workDir);
+      } catch {
+        // best effort
+      }
+      fs.rmSync(workDir, { recursive: true, force: true });
+
+      if (outcome.rateLimit) usage = outcome.rateLimit;
+      if (outcome.status === "quota") {
+        stopReason = `usage limit hit during ${tag} (not recorded; it reruns on --resume)`;
+        console.log(`[quota] ${tag}: ${outcome.error ?? outcome.resultText.slice(0, 200)}`);
+        break;
+      }
 
       const answer = extractAnswer(outcome.resultText);
       const browserCalls = Object.entries(outcome.toolCallsByName)
@@ -124,9 +210,9 @@ async function main(): Promise<void> {
       const correct = status === "ok" && answer !== null && check(answer, task.check);
 
       const record: RunRecord = {
-        runId,
-        tool: tool.id,
-        model: opts.model!,
+        runId: meta.runId,
+        tool: toolId,
+        model: meta.model,
         taskId: task.id,
         site: task.site,
         kind: task.kind,
@@ -149,27 +235,40 @@ async function main(): Promise<void> {
         toolResultChars: outcome.toolResultChars,
         toolResultImages: outcome.toolResultImages,
         error: outcome.error ?? null,
+        usageFiveHour: outcome.rateLimit?.fiveHour ?? null,
       };
       records.push(record);
       fs.appendFileSync(runsFile, JSON.stringify(record) + "\n");
-      fs.rmSync(cwd, { recursive: true, force: true });
 
-      done++;
+      finished++;
       const mark = correct ? "PASS" : status === "ok" ? "FAIL" : status.toUpperCase();
       console.log(
-        `[${done}/${jobs.length}] ${task.id} #${rep} ${mark} ${record.totalTokens.toLocaleString()} tok ` +
-          `${record.wallSeconds}s ${record.toolCalls} calls` +
+        `[${finished}/${jobs.length}] ${tag} ${mark} ${record.totalTokens.toLocaleString("en-US")} tok ` +
+          `${record.wallSeconds}s ${record.toolCalls} calls | 5h ${pctOf(usage?.fiveHour ?? null)}` +
           (correct ? "" : ` | answer: ${answer ?? "(none)"}${record.error ? ` | ${record.error}` : ""}`),
       );
+
+      const u = usage as RateLimit | null;
+      if (u?.fiveHour != null && u.fiveHour >= stopAt)
+        stopReason = `5-hour usage at ${pctOf(u.fiveHour)} (limit set to ${pctOf(stopAt)})`;
+      else if (u?.sevenDay != null && u.sevenDay >= stopAtWeekly)
+        stopReason = `7-day usage at ${pctOf(u.sevenDay)} (limit set to ${pctOf(stopAtWeekly)})`;
     }
   }
 
   await Promise.all(Array.from({ length: Math.min(concurrency, jobs.length) }, worker));
   fs.rmSync(scratchRoot, { recursive: true, force: true });
 
-  const report = renderReport(records, [meta]);
+  const report = renderReport(records, reportMetas(meta));
   fs.writeFileSync(path.join(outDir, "report.md"), report);
   console.log("\n" + report);
+  const remaining = planJobs(tasks, meta.tools.map((t) => t.tool), meta.repeats, new Set(records.map((r) => jobKey(r.tool, r.taskId, r.rep)))).length;
+  if (remaining) {
+    const u = usage as RateLimit | null;
+    const resets = u?.resetsAt ? ` The 5-hour window resets at ${new Date(u.resetsAt * 1000).toLocaleString()}.` : "";
+    console.log(`\nStopped with ${remaining} runs left: ${stopReason ?? "unknown"}.${resets}`);
+    console.log(`Continue with: npm run bench -- --resume ${path.relative(process.cwd(), outDir)}`);
+  }
   console.log(`results: ${outDir}`);
 }
 

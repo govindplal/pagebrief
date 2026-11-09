@@ -1,6 +1,8 @@
 // Browser tools under test. Every tool is mounted as an MCP server named
 // "browser", so the agent sees the same tool prefix (mcp__browser__*) and the
-// only variable between runs is the tool itself.
+// only variable between runs is the tool itself. All tools drive the same
+// installed Google Chrome, headless.
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -17,12 +19,37 @@ export interface ToolUnderTest {
   description: string;
   /** Version recorded in run metadata, read from what is installed. */
   version: () => string;
-  /** Server config for one run; workDir is a scratch dir the tool may write into. */
+  /** Server config for one run; workDir is a scratch dir unique to the run. */
   server: (workDir: string) => McpServer;
+  /** Called after each run, e.g. to stop a browser daemon that outlives the MCP server. */
+  cleanup?: (workDir: string) => void;
 }
 
 const packageVersion = (pkg: string): string =>
   (JSON.parse(fs.readFileSync(path.resolve("node_modules", pkg, "package.json"), "utf8")) as { version: string }).version;
+
+/** Installed Google Chrome, so tools that launch a browser by path use the same one Playwright's "chrome" channel finds. */
+export function findChrome(): string {
+  const candidates = [
+    process.env.CHROME_PATH,
+    ...(process.platform === "win32"
+      ? [
+          path.join(process.env.PROGRAMFILES ?? "C:\\Program Files", "Google\\Chrome\\Application\\chrome.exe"),
+          path.join(process.env["PROGRAMFILES(X86)"] ?? "C:\\Program Files (x86)", "Google\\Chrome\\Application\\chrome.exe"),
+          path.join(process.env.LOCALAPPDATA ?? "", "Google\\Chrome\\Application\\chrome.exe"),
+        ]
+      : process.platform === "darwin"
+        ? ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"]
+        : ["/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/opt/google/chrome/chrome"]),
+  ];
+  const found = candidates.find((p) => p && fs.existsSync(p));
+  if (!found) throw new Error("Google Chrome not found; set CHROME_PATH");
+  return found;
+}
+
+const agentBrowserCli = (): string => path.resolve("node_modules/agent-browser/bin/agent-browser.js");
+/** agent-browser session names allow letters, digits, hyphens and underscores. */
+const agentBrowserSession = (workDir: string): string => `bench_${path.basename(workDir).replace(/[^A-Za-z0-9_-]/g, "_")}`;
 
 export const TOOLS: Record<string, ToolUnderTest> = {
   "playwright-mcp": {
@@ -41,6 +68,27 @@ export const TOOLS: Record<string, ToolUnderTest> = {
         path.join(workDir, "pw-output"),
       ],
     }),
+  },
+  "agent-browser": {
+    id: "agent-browser",
+    description: "Vercel agent-browser MCP server (`agent-browser mcp`, default core tool profile), headless installed Chrome",
+    version: () => packageVersion("agent-browser"),
+    server: (workDir) => ({
+      command: process.execPath,
+      args: [agentBrowserCli(), "mcp"],
+      env: {
+        AGENT_BROWSER_SESSION: agentBrowserSession(workDir),
+        AGENT_BROWSER_EXECUTABLE_PATH: findChrome(),
+        AGENT_BROWSER_SCREENSHOT_DIR: path.join(workDir, "ab-output"),
+      },
+    }),
+    // The browser daemon outlives the MCP server; close this run's session.
+    cleanup: (workDir) => {
+      spawnSync(process.execPath, [agentBrowserCli(), "--session", agentBrowserSession(workDir), "close"], {
+        stdio: "ignore",
+        timeout: 30_000,
+      });
+    },
   },
 };
 

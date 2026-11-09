@@ -31,6 +31,8 @@ export interface RunRecord {
   toolResultChars: number;
   toolResultImages: number;
   error: string | null;
+  /** Subscription 5-hour usage after this run (0-1), when the CLI reported it. */
+  usageFiveHour?: number | null;
 }
 
 export interface RunMeta {
@@ -91,7 +93,8 @@ export function renderReport(records: RunRecord[], metas: RunMeta[]): string {
   lines.push("| Tool | Runs | Success | Median tokens/task | Mean tokens/task | Median s/task | Mean tool calls | Est. API cost | Tokens vs baseline |");
   lines.push("|---|---|---|---|---|---|---|---|---|");
   for (const s of summaries) {
-    const ratio = base && s !== base && s.medTokens ? `${(base.medTokens / s.medTokens).toFixed(1)}x fewer` : "baseline";
+    const r = base && s !== base && s.medTokens ? base.medTokens / s.medTokens : null;
+    const ratio = r === null ? "baseline" : r >= 1 ? `${r.toFixed(1)}x fewer` : `${(1 / r).toFixed(1)}x more`;
     lines.push(
       `| ${s.tool} | ${s.runs} | ${pct(s.correct, s.runs)} | ${int(s.medTokens)} | ${int(s.meanTokens)} | ${sec(s.medSeconds)} | ` +
         `${s.meanCalls.toFixed(1)} | $${s.totalCost.toFixed(2)} | ${ratio} |`,
@@ -128,14 +131,18 @@ export function renderReport(records: RunRecord[], metas: RunMeta[]): string {
   return lines.join("\n");
 }
 
-function readRunDir(dir: string): { records: RunRecord[]; meta: RunMeta } {
+/** meta.json is one tool (older runs) or several under `tools`. */
+type MetaFile = RunMeta | { runId: string; model?: string; effort?: string; tools: { tool: string; toolVersion: string }[] };
+
+function readRunDir(dir: string): { records: RunRecord[]; metas: RunMeta[] } {
   const records = fs
     .readFileSync(path.join(dir, "runs.jsonl"), "utf8")
     .split("\n")
     .filter((l) => l.trim())
     .map((l) => JSON.parse(l) as RunRecord);
-  const meta = JSON.parse(fs.readFileSync(path.join(dir, "meta.json"), "utf8")) as RunMeta;
-  return { records, meta };
+  const m = JSON.parse(fs.readFileSync(path.join(dir, "meta.json"), "utf8")) as MetaFile;
+  const metas = "tools" in m ? m.tools.map((t) => ({ runId: m.runId, model: m.model, effort: m.effort, ...t })) : [m];
+  return { records, metas };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -145,5 +152,5 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     process.exit(1);
   }
   const loaded = dirs.map(readRunDir);
-  console.log(renderReport(loaded.flatMap((l) => l.records), loaded.map((l) => l.meta)));
+  console.log(renderReport(loaded.flatMap((l) => l.records), loaded.flatMap((l) => l.metas)));
 }

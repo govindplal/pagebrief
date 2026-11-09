@@ -6,6 +6,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import readline from "node:readline";
+import { parseRateLimit, QUOTA_ERROR, type RateLimit } from "./plan.ts";
 import { MCP_SERVER_NAME } from "./tools.ts";
 
 export interface RunSpec {
@@ -18,10 +19,13 @@ export interface RunSpec {
   timeoutMs: number;
   maxBudgetUsd: number;
   transcriptPath: string;
+  /** Extra environment for the claude process (inherited by the MCP server). */
+  env?: Record<string, string>;
 }
 
 export interface RunOutcome {
-  status: "ok" | "error" | "timeout";
+  /** "quota": the subscription limit was hit; the run says nothing about the tool and should be retried. */
+  status: "ok" | "error" | "timeout" | "quota";
   resultText: string;
   error?: string;
   wallSeconds: number;
@@ -37,6 +41,8 @@ export interface RunOutcome {
   toolResultChars: number;
   toolResultImages: number;
   models: string[];
+  /** Latest subscription usage reported during the run. */
+  rateLimit: RateLimit | null;
 }
 
 interface ModelUsage {
@@ -61,6 +67,7 @@ interface StreamMessage {
   num_turns?: number;
   total_cost_usd?: number;
   modelUsage?: Record<string, ModelUsage>;
+  rate_limit_info?: Parameters<typeof parseRateLimit>[0];
 }
 
 export function claudeArgs(spec: RunSpec): string[] {
@@ -122,11 +129,15 @@ export async function runClaude(spec: RunSpec): Promise<RunOutcome> {
     toolResultChars: 0,
     toolResultImages: 0,
     models: [],
+    rateLimit: null,
   };
   const transcript = fs.createWriteStream(spec.transcriptPath);
   const child = spawn("claude", claudeArgs(spec), {
     cwd: spec.cwd,
     stdio: ["ignore", "pipe", "pipe"],
+    // Tool search would defer large tool sets behind a ToolSearch tool we don't
+    // provide; keep every tool's definitions loaded so all tools are measured alike.
+    env: { ...process.env, ENABLE_TOOL_SEARCH: "false", ...spec.env },
     detached: process.platform !== "win32",
   });
 
@@ -150,7 +161,9 @@ export async function runClaude(spec: RunSpec): Promise<RunOutcome> {
       continue;
     }
     const content = Array.isArray(msg.message?.content) ? msg.message.content : [];
-    if (msg.type === "assistant") {
+    if (msg.type === "rate_limit_event" && msg.rate_limit_info) {
+      out.rateLimit = parseRateLimit(msg.rate_limit_info);
+    } else if (msg.type === "assistant") {
       for (const b of content) {
         if (b.type === "tool_use" && "name" in b) {
           out.toolCalls++;
@@ -198,5 +211,9 @@ export async function runClaude(spec: RunSpec): Promise<RunOutcome> {
     out.status = "error";
     out.error = `exit ${code}, no result message. stderr: ${stderr.slice(0, 500)}`;
   }
+  const limitHit = out.rateLimit?.status === "rejected" || QUOTA_ERROR.test(out.error ?? "");
+  // A limit message can also arrive as a normal result with no ANSWER line.
+  const limitText = out.status === "ok" && !/ANSWER:/.test(out.resultText) && QUOTA_ERROR.test(out.resultText);
+  if ((out.status === "error" && limitHit) || limitText) out.status = "quota";
   return out;
 }

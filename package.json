@@ -17,6 +17,7 @@
   "devDependencies": {
     "@playwright/mcp": "0.0.84",
     "@types/node": "24.19.2",
+    "agent-browser": "0.41.2",
     "tsx": "4.23.15",
     "typescript": "6.0.2"
   }
