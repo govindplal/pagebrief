@@ -152,7 +152,7 @@ All 6 failures are the openlibrary.org tasks, for both tools: the site started s
 | Vercel agent-browser 0.41.2 | 60 | 95% | 77,514 | 17.1 | 2.3 |
 | **agentic-browser 0.1.0** | 60 | **95%** | **5,346** | **12.7** | **2.2** |
 
-**~5x fewer tokens** than Playwright MCP at a median, ~14x fewer than agent-browser. Slightly slower than Playwright at the median (12.7 s against 14.3 s is faster, but see the report). The 10x target is not met yet. Interaction-heavy pages still cost about 20k tokens at the median; the fixes in v0.1b made Packagist answers correct and cheaper on two of three tasks, but did not move that median. Caveat: one repeat, and the baselines ran at concurrency 3 while this run used 2. Full report: [docs/results/2026-11-09-engine-v0.1-rep1.md](docs/results/2026-11-09-engine-v0.1-rep1.md). The three failures are openlibrary.org tasks that timed out on the connection in the latest run (earlier, two of them passed), so they say more about site availability than about the engine.
+**~5x fewer tokens** than Playwright MCP at a median, ~14x fewer than agent-browser. Also a little faster at the median (12.7 s against 14.3 s). The 10x target is not met yet. Interaction-heavy pages still cost about 20k tokens at the median; the fixes in v0.1b made Packagist answers correct and cheaper on two of three tasks, but did not move that median. Caveat: one repeat, and the baselines ran at concurrency 3 while this run used 2. Full report: [docs/results/2026-11-09-engine-v0.1-rep1.md](docs/results/2026-11-09-engine-v0.1-rep1.md). The three failures are openlibrary.org tasks that timed out on the connection in the latest run (earlier, two of them passed), so they say more about site availability than about the engine.
 
 ### Run it
 
