@@ -61,3 +61,30 @@ test("readText pages through the text", () => {
   assert.equal(readText(p, 3, 4), "text 3-7 of 10:\ndefg\n[more: read(from=7)]");
   assert.equal(readText(p, 7), "text 7-10 of 10:\nhij\n[end of text]");
 });
+
+test("a JSON document is searched by path, and a hit deep in a minified line stays visible", () => {
+  const doc = { packages: { "laravel/framework": [{ version: "v10.0.0", require: { php: "^8.1" } }, { version: "v9.0.0", time: "2022-02-08T15:48:00+00:00" }] } };
+  const p = page({ url: "https://repo.example/p2.json", text: JSON.stringify(doc), json: [], jsonLd: [], links: [], forms: [] });
+  assert.match(findIn(p, "v9\\.0\\.0"), /doc packages\.laravel\/framework\[1\]\.version = "v9\.0\.0"/);
+  assert.match(findIn(p, "2022-02-08"), /time = "2022-02-08/);
+  const v = renderOpen(p);
+  assert.match(v, /json document: \{packages\}, \d+ values/);
+  assert.doesNotMatch(v, /\ntext/);
+});
+
+test("around() keeps the match in view on a long line", () => {
+  const long = "x".repeat(1000) + "NEEDLE" + "y".repeat(1000);
+  assert.match(findIn(page({ text: long }), "NEEDLE"), /L1: …x{120}NEEDLE/);
+});
+
+test("a large JSON document is searched from its captured response, not its cut-off text", () => {
+  const doc = { packages: { x: [{ version: "v10.0.0", require: { php: "^8.1" } }] } };
+  const p = page({ url: "https://repo.example/p2.json#v10", text: JSON.stringify(doc).slice(0, 30), json: [{ url: "https://repo.example/p2.json", status: 200, data: doc }], jsonLd: [], links: [], forms: [] });
+  assert.match(findIn(p, "php"), /doc packages\.x\[0\]\.require\.php = "\^8\.1"/);
+});
+
+test("search reaches values past the first 5,000 in a large document", () => {
+  const big = { list: Array.from({ length: 6000 }, (_, i) => ({ version: `v${i}.0.0` })) };
+  const p = page({ url: "https://repo.example/big.json", text: JSON.stringify(big), json: [{ url: "https://repo.example/big.json", status: 200, data: big }], jsonLd: [], links: [], forms: [] });
+  assert.match(findIn(p, "v5999\.0\.0"), /doc list\[5999\]\.version = "v5999\.0\.0"/);
+});

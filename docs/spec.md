@@ -150,3 +150,6 @@ Raw CDP on headless installed Chrome with three read-only tools: `open(url)` (ti
 
 Median 5,385 tokens per task (Playwright MCP 26,402; agent-browser 77,514), 98% success, 12.1 s median (Playwright 14.3 s), 2.0 mean tool calls. Measured against the spec's 10x target: 4.9x vs Playwright MCP, so not yet met. Non-headline targets: seconds pass (12.1 vs 14.3); tool calls do not (2.0 mean vs the proposed 1.5). Report: `docs/results/2026-11-09-engine-v0.1-rep1.md`.
 
+### Engine v0.1b (interaction fixes), repeat 1
+
+Median 5,346 tokens, 95% success, 12.7 s, 2.2 mean calls. The fixes (JSON documents searched by path from the captured response, full-document search, in-context matches) made Packagist pages correct and cheaper on two of three tasks, but the interaction-heavy median is still about 20k tokens, so this target is not met. Report: `docs/results/2026-11-09-engine-v0.1b-rep1.md`.

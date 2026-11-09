@@ -100,7 +100,10 @@ export class Browser {
 
     try {
       const nav = await this.send<{ errorText?: string }>("Page.navigate", { url });
-      if (nav.errorText) throw new Error(`navigation to ${url} failed: ${nav.errorText}`);
+      // ERR_ABORTED is what Chrome reports when the page itself cancels the first
+      // navigation (e.g. it redirects or swaps in a client-side view). Wait for
+      // what loads instead of failing; other errors are real.
+      if (nav.errorText && nav.errorText !== "net::ERR_ABORTED") throw new Error(`navigation to ${url} failed: ${nav.errorText}`);
       await waitUntil(() => loaded, this.opts.navigationTimeoutMs ?? 20_000);
       await waitUntil(() => inflight.size === 0 && Date.now() - lastActivity >= QUIET_MS, this.opts.settleTimeoutMs ?? 5_000);
       await Promise.allSettled(bodyFetches);

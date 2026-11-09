@@ -43,10 +43,43 @@ export interface PageData extends RawPage {
 
 const clip = (s: string, n: number): string => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
+/** A window of a long line around the match, so a hit deep in a minified line stays visible. */
+const around = (line: string, re: RegExp, width = 120): string => {
+  const m = re.exec(line);
+  if (!m || line.length <= 240) return clip(line.trim(), 240);
+  const start = Math.max(0, m.index - width);
+  const end = Math.min(line.length, m.index + m[0].length + width);
+  return `${start > 0 ? "…" : ""}${line.slice(start, end)}${end < line.length ? "…" : ""}`;
+};
+
+/**
+ * The page's own JSON, when the page is a JSON document (an API response opened
+ * directly). Prefers the captured response: the rendered text is cut at a size
+ * limit, and a large document no longer parses from it.
+ */
+export function jsonDocument(p: PageData): unknown | undefined {
+  const bare = p.url.split("#")[0];
+  const own = p.json.find((j) => j.url === bare);
+  return own ? own.data : parseJsonDocument(p.text);
+}
+
+export function parseJsonDocument(text: string): unknown | undefined {
+  const t = text.trimStart();
+  if (t[0] !== "{" && t[0] !== "[") return undefined;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+}
+
 const scalar = (v: unknown): string => (typeof v === "string" ? JSON.stringify(clip(v, 200)) : String(v));
 
 /** Flattens JSON to "path = value" lines, which are cheap to search and to read. */
-export function flattenJson(value: unknown, prefix = "", out: string[] = [], limit = 5000): string[] {
+/** Every value in a document is searchable; large API documents have tens of thousands of them. */
+export const MAX_VALUES = 500_000;
+
+export function flattenJson(value: unknown, prefix = "", out: string[] = [], limit = MAX_VALUES): string[] {
   if (out.length >= limit) return out;
   if (value === null || typeof value !== "object") {
     out.push(`${prefix || "."} = ${scalar(value)}`);
@@ -117,6 +150,15 @@ export function renderOpen(p: PageData, textBudget = 3000): string {
     lines.push(`form: ${f.method.toUpperCase()} ${f.action} ← ${fields}`);
   }
 
+  const doc = jsonDocument(p);
+  if (doc !== undefined) {
+    const values = flattenJson(doc);
+    lines.push(`json document: ${shape(doc)}, ${values.length} values${values.length > 40 ? " (first 40 shown)" : ""}:`);
+    lines.push(...values.slice(0, 40).map((l) => `  ${clip(l, 160)}`));
+    lines.push("[find(pattern) searches every value by path]");
+    return lines.join("\n");
+  }
+
   const cut = cutText(p.text, textBudget);
   lines.push(cut < p.text.length ? `text (first ${cut} of ${p.text.length} chars):` : "text:");
   lines.push(p.text.slice(0, cut));
@@ -139,12 +181,17 @@ export function findIn(p: PageData, pattern: string, max = 40): string {
     total++;
     if (hits.length < max) hits.push(s);
   };
-  p.text.split("\n").forEach((line, i) => {
-    if (re.test(line)) add(`L${i + 1}: ${clip(line.trim(), 240)}`);
-  });
+  const doc = jsonDocument(p);
+  if (doc !== undefined) {
+    for (const line of flattenJson(doc)) if (re.test(line)) add(`doc ${around(line, re)}`);
+  } else {
+    p.text.split("\n").forEach((line, i) => {
+      if (re.test(line)) add(`L${i + 1}: ${around(line, re)}`);
+    });
+  }
   for (const l of p.links) if (re.test(l.text) || re.test(l.href)) add(`link: ${l.text} -> ${l.href}`);
-  for (const [i, j] of p.json.entries()) for (const line of flattenJson(j.data)) if (re.test(line)) add(`json#${i + 1} ${clip(line, 240)}`);
-  for (const line of parseJsonLd(p.jsonLd).flatMap((x) => flattenJson(x))) if (re.test(line)) add(`ld ${clip(line, 240)}`);
+  for (const [i, j] of p.json.entries()) for (const line of flattenJson(j.data)) if (re.test(line)) add(`json#${i + 1} ${around(line, re)}`);
+  for (const line of parseJsonLd(p.jsonLd).flatMap((x) => flattenJson(x))) if (re.test(line)) add(`ld ${around(line, re)}`);
   if (!total) return `no matches for /${re.source}/i`;
   return [`${total} matches for /${re.source}/i${total > max ? ` (showing ${max})` : ""}:`, ...hits].join("\n");
 }
