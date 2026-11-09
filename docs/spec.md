@@ -145,3 +145,8 @@ Most of those tokens are fixed cost: ~8k tokens of system prompt + 25 tool defin
 ## Engine v0.1 (2026-11-09)
 
 Raw CDP on headless installed Chrome with three read-only tools: `open(url)` (title, JSON-LD, JSON the page loaded, forms, first ~3k characters of text), `find(pattern)` and `read(from)`. First smoke run: books.toscrape.com category lookup correct in 13,820 tokens (Playwright MCP 34,192, agent-browser 69,768 on the same task), but 24.5 s against 19.8 s. Full 60-task run pending.
+
+### Engine v0.1 benchmark, repeat 1 (2026-11-09)
+
+Median 5,385 tokens per task (Playwright MCP 26,402; agent-browser 77,514), 98% success, 12.1 s median (Playwright 14.3 s), 2.0 mean tool calls. Measured against the spec's 10x target: 4.9x vs Playwright MCP, so not yet met. Non-headline targets: seconds pass (12.1 vs 14.3); tool calls do not (2.0 mean vs the proposed 1.5). Report: `docs/results/2026-11-09-engine-v0.1-rep1.md`.
+

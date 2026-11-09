@@ -32,7 +32,8 @@ So the way to make agents cheaper and faster is **fewer, smaller tools and fewer
 |---|---|
 | ✅ Benchmark | 60 tasks on 20 sites with a verified answer key; runner, scorer, report; two baselines measured |
 | ✅ Engine v0.1 | Raw CDP driver, JSON capture, `open` / `find` / `read`, MCP server, CLI, tests against real Chrome |
-| 🔜 Next | Full benchmark run of the engine; per-page-type map cache; typed fields from captured JSON |
+| ✅ First benchmark | v0.1: 98% success, 5.4k median tokens (4.9x fewer than Playwright MCP), 12.1 s median |
+| 🔜 Next | Repeats 2-3 for stable numbers; cut the cost of interaction-heavy pages (20k median); per-page-type map cache |
 | ⏸️ Later | Actions (search, paginate, submit) with read/write/dangerous labels; diffs after each action; shared public-page maps |
 
 ## Quick start
@@ -143,9 +144,15 @@ Each run gives a headless Claude Code agent one task, a start URL and only the b
 
 All 6 failures are the openlibrary.org tasks, for both tools: the site started showing headless browsers a human-verification page after the answer key was written. Full report: [`docs/results/2026-11-09-baseline-rep1.md`](docs/results/2026-11-09-baseline-rep1.md).
 
-### agentic-browser v0.1: first smoke run
+### agentic-browser v0.1 (same tasks, same model, one repeat)
 
-One task (books.toscrape.com, a category lookup), one run: **correct, 13,820 tokens**, against 34,192 for Playwright MCP and 69,768 for agent-browser on the same task in the baseline run. It took 24.5 s against Playwright's 19.8 s. One run is an early signal, not a result; the full 60-task comparison is the next step.
+| Tool | Runs | Success | Median tokens/task | Median s/task | Mean tool calls |
+|---|---|---|---|---|---|
+| Playwright MCP 0.0.84 | 60 | 95% | 26,402 | 14.3 | 3.0 |
+| Vercel agent-browser 0.41.2 | 60 | 95% | 77,514 | 17.1 | 2.3 |
+| **agentic-browser 0.1.0** | 60 | **98%** | **5,385** | **12.1** | **2.0** |
+
+**4.9x fewer tokens** than Playwright MCP at a median, 14.4x fewer than agent-browser, and slightly faster. The 10x target is not met yet. Caveat: one repeat, and the baselines ran at concurrency 3 while this run used 2. Full report: [docs/results/2026-11-09-engine-v0.1-rep1.md](docs/results/2026-11-09-engine-v0.1-rep1.md). The one failure is an openlibrary.org task. Two other openlibrary tasks passed, so the bot check is not a hard block for this engine.
 
 ### Run it
 
