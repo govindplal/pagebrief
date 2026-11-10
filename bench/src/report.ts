@@ -64,6 +64,7 @@ interface Summary {
   medSeconds: number;
   meanCalls: number;
   totalCost: number;
+  medCost: number;
 }
 
 function summarize(tool: string, rs: RunRecord[]): Summary {
@@ -77,6 +78,7 @@ function summarize(tool: string, rs: RunRecord[]): Summary {
     medSeconds: median(rs.map((r) => r.wallSeconds)),
     meanCalls: mean(rs.map((r) => r.toolCalls)),
     totalCost: rs.reduce((a, r) => a + (r.costUsd ?? 0), 0),
+    medCost: median(rs.map((r) => r.costUsd ?? 0)),
   };
 }
 
@@ -94,14 +96,17 @@ export function renderReport(records: RunRecord[], metas: RunMeta[]): string {
   lines.push("## Benchmark results", "");
   for (const m of metas) lines.push(`- \`${m.runId}\`: ${m.tool} ${m.toolVersion}, model ${m.model ?? "?"}, effort ${m.effort ?? "?"}`);
   lines.push("");
-  lines.push("| Tool | Runs | Success | Median tokens/task | Mean tokens/task | Median s/task | Mean tool calls | Est. API cost | Tokens vs baseline |");
-  lines.push("|---|---|---|---|---|---|---|---|---|");
+  lines.push("| Tool | Runs | Success | Median tokens/task | Mean tokens/task | Median s/task | Mean tool calls | Median cost/task | Est. API cost | Tokens vs baseline | Cost vs baseline |");
+  lines.push("|---|---|---|---|---|---|---|---|---|---|---|");
   for (const s of summaries) {
     const r = base && s !== base && s.medTokens ? base.medTokens / s.medTokens : null;
     const ratio = r === null ? "baseline" : r >= 1 ? `${r.toFixed(1)}x fewer` : `${(1 / r).toFixed(1)}x more`;
+    // Tokens overstate the gap: re-sent tool definitions are cache reads, billed at a fraction of the input price.
+    const c = base && s !== base && s.medCost ? base.medCost / s.medCost : null;
+    const costRatio = s === base ? "baseline" : c === null ? "n/a" : c >= 1 ? `${c.toFixed(1)}x cheaper` : `${(1 / c).toFixed(1)}x dearer`;
     lines.push(
       `| ${s.tool} | ${s.runs} | ${pct(s.correct, s.runs)} | ${int(s.medTokens)} | ${int(s.meanTokens)} | ${sec(s.medSeconds)} | ` +
-        `${s.meanCalls.toFixed(1)} | $${s.totalCost.toFixed(2)} | ${ratio} |`,
+        `${s.meanCalls.toFixed(1)} | $${s.medCost.toFixed(4)} | $${s.totalCost.toFixed(2)} | ${ratio} | ${costRatio} |`,
     );
   }
   lines.push("");

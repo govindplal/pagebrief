@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { cutText, findIn, flattenJson, readText, renderOpen, type PageData } from "./view.ts";
+import { cutText, findIn, flattenJson, readText, renderOpen, textStart, type PageData } from "./view.ts";
 
 const page = (over: Partial<PageData> = {}): PageData => ({
   url: "https://shop.example/p/1",
@@ -87,4 +87,29 @@ test("search reaches values past the first 5,000 in a large document", () => {
   const big = { list: Array.from({ length: 6000 }, (_, i) => ({ version: `v${i}.0.0` })) };
   const p = page({ url: "https://repo.example/big.json", text: JSON.stringify(big), json: [{ url: "https://repo.example/big.json", status: 200, data: big }], jsonLd: [], links: [], forms: [] });
   assert.match(findIn(p, "v5999\.0\.0"), /doc list\[5999\]\.version = "v5999\.0\.0"/);
+});
+
+test("open() starts at the main content when a long site header comes first", () => {
+  const header = "Menu\n" + "nav link\n".repeat(60);
+  const main = "Kettle guide\n" + "Useful sentence about kettles.\n".repeat(20);
+  const p = page({ text: header + main, mainStart: header.length });
+  const v = renderOpen(p, 200);
+  assert.match(v, new RegExp(`text \\(main content, chars ${header.length}-\\d+ of ${p.text.length}; site header before it: read\\(from=0\\)\\):\\nKettle guide`));
+  assert.doesNotMatch(v, /nav link/);
+  assert.match(v, /\[more: read\(from=\d+\)/);
+  assert.match(findIn(p, "nav link"), /^60 matches/, "the skipped header is still searchable");
+});
+
+test("open() keeps the top of the page when the header is short or main is nearly empty", () => {
+  assert.equal(textStart({ text: "x".repeat(5000), mainStart: 120 }), 0);
+  assert.equal(textStart({ text: "x".repeat(1000), mainStart: 900 }), 0);
+  assert.equal(textStart({ text: "x".repeat(5000) }), 0);
+  assert.equal(textStart({ text: "x".repeat(5000), mainStart: 800 }), 800);
+});
+
+test("find() refuses very long patterns and stops when it runs out of time", () => {
+  assert.throws(() => findIn(page(), "a".repeat(301)), /keep it under 300/);
+  const big = page({ text: Array.from({ length: 5000 }, (_, i) => `line ${i}`).join("\n") });
+  assert.match(findIn(big, "line", 40, -1), /search stopped after -1 ms; results are partial/);
+  assert.match(findIn(big, "line 4999"), /^1 matches/);
 });

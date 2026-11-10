@@ -9,6 +9,14 @@ export const EXTRACT_SCRIPT = String.raw`(() => {
   const text = body
     ? body.innerText.replace(/[ \t ]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 400000)
     : "";
+  // Where the page's main content starts in the text, so open() can skip the
+  // site header and navigation that come before it.
+  let mainStart = 0;
+  const mainEl = document.querySelector('main, [role="main"]') || document.querySelector("article");
+  if (mainEl && text) {
+    const probe = (mainEl.innerText || "").replace(/[ \t ]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 60);
+    if (probe.length >= 20) mainStart = Math.max(0, text.indexOf(probe));
+  }
   const headings = [...document.querySelectorAll("h1,h2,h3")]
     .filter(visible)
     .slice(0, 80)
@@ -55,6 +63,7 @@ export const EXTRACT_SCRIPT = String.raw`(() => {
     description: meta("description") || meta("og:description"),
     lang: document.documentElement.lang || "",
     text,
+    mainStart,
     headings,
     links,
     forms,

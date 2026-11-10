@@ -44,6 +44,15 @@ export const TOOLS: Record<string, ToolUnderTest> = {
       args: ["--import", pathToFileURL(path.resolve("node_modules/tsx/dist/loader.mjs")).href, path.resolve("src/cli.ts"), "mcp"],
     }),
   },
+  "plain-fetch": {
+    id: "plain-fetch",
+    description: "No browser: one tool that downloads the URL over HTTP and converts HTML to text (bench/src/plain-fetch.ts)",
+    version: () => "1.0.0",
+    server: () => ({
+      command: process.execPath,
+      args: ["--import", pathToFileURL(path.resolve("node_modules/tsx/dist/loader.mjs")).href, path.resolve("bench/src/plain-fetch.ts")],
+    }),
+  },
   "playwright-mcp": {
     id: "playwright-mcp",
     description: "Playwright MCP with default settings (accessibility snapshots), headless installed Chrome",

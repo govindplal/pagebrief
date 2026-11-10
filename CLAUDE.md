@@ -14,20 +14,22 @@ MCP browser layer that gives AI agents any web page as compact, typed text, driv
 ## Layout
 - `src/cdp/`: CDP client (built-in WebSocket) and Chrome launcher
 - `src/browser.ts`: one tab; navigate, wait for network quiet, capture JSON, extract in one `Runtime.evaluate` (never `Runtime.enable`)
-- `src/page/`: in-page extraction script and the pure view functions behind `open` / `find` / `read`
-- `src/engine.ts`, `src/mcp.ts`, `src/cli.ts`: operations, MCP server, CLI
-- `bench/`: tasks with answer key, runner (headless Claude Code), scorer, report
+- `src/net/guard.ts`: refuses localhost and private-network URLs unless `allowPrivate` (`--allow-private`); behind a proxy the connected-address check is off and redirect hops are checked by name
+- `src/page/`: in-page extraction script, JSON ranking, and the pure view functions behind `open` / `find` / `read`
+- `src/engine.ts`, `src/mcp.ts`, `src/cli.ts`: operations (opens are queued: one tab), MCP server, CLI; `bin/agentic-browser.js` is the npx entry point
+- `bench/`: tasks with answer key, runner (headless Claude Code), scorer, report; `bench/src/plain-fetch.ts` is the no-browser baseline
 
 ## Stack
 - TypeScript, Node 22+ (developed on 25), ESM, run from source with `tsx`; `zod` schemas; `node:test` (not vitest: vitest 5.1.0's peer dependencies break `npm install`)
 - `@modelcontextprotocol/sdk` for the server; no other runtime dependencies
 - Benchmark agent: headless Claude Code (`claude -p`) on the user's Claude subscription (no API key), `claude-sonnet-5-5`, effort `medium`
-- Baselines: `@playwright/mcp` 0.0.84 and `agent-browser` 0.41.2 (`agent-browser mcp`, core profile), all on headless installed Chrome
+- Baselines: `@playwright/mcp` 0.0.84 and `agent-browser` 0.41.2 (`agent-browser mcp`, core profile), all on headless installed Chrome; `plain-fetch` (no browser, one tool)
+- End-to-end tests pass `--no-proxy-server` and `allowPrivate` (or host-resolver rules) because they use a local HTTP server
 
 ## Commands
 - Test: `npm test` (includes an end-to-end test against real Chrome)
 - Typecheck: `npm run lint`
-- Try a page: `npm run open -- <url> [--find <regex>]`
+- Try a page: `npm run open -- <url> [--find <regex>] [--allow-private]`
 - Benchmark: `npm run bench -- --tool agentic-browser,playwright-mcp [--tasks id1,id2] [--sites a.com] [--repeats 3] [--concurrency 2] [--stop-at 0.85]`
 - Continue a stopped run: `npm run bench -- --resume results/<runId> [--repeats 3]`
 - Compare runs: `npm run bench:report -- results/<run-a> results/<run-b>`
