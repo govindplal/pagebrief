@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>agentic-browser walkthrough</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --panel: #ffffff; --ink: #1c1d21; --muted: #5c6270; --line: #e3e4e8;
+    --accent: #3b5bdb; --good: #1f7a45; --warn: #b45309; --bad: #b42318; --code: #f1f2f5;
+    --hl: #eef2ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121317; --panel: #1a1c22; --ink: #e8e9ed; --muted: #9aa1b0; --line: #2b2e37;
+      --accent: #8da2ff; --good: #5cc98a; --warn: #e5a04d; --bad: #f08a80; --code: #22252d; --hl: #1f2540;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121317; --panel: #1a1c22; --ink: #e8e9ed; --muted: #9aa1b0; --line: #2b2e37;
+    --accent: #8da2ff; --good: #5cc98a; --warn: #e5a04d; --bad: #f08a80; --code: #22252d; --hl: #1f2540;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px 80px; }
+  header.top { padding: 56px 0 24px; border-bottom: 1px solid var(--line); }
+  h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.5rem; margin: 56px 0 8px; letter-spacing: -0.01em; scroll-margin-top: 70px; }
+  h3 { font-size: 1.1rem; margin: 28px 0 6px; }
+  p { margin: 10px 0; }
+  .lede { color: var(--muted); font-size: 1.08rem; max-width: 68ch; }
+  a { color: var(--accent); }
+  code { background: var(--code); padding: 1px 6px; border-radius: 5px; font: 0.88em ui-monospace, "SF Mono", Consolas, monospace; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font: 0.85rem/1.5 ui-monospace, "SF Mono", Consolas, monospace; margin: 12px 0; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  nav.toc { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  nav.toc .in { max-width: 920px; margin: 0 auto; padding: 8px 16px; display: flex; gap: 14px; overflow-x: auto; white-space: nowrap; font-size: 0.88rem; align-items: center; }
+  nav.toc a { color: var(--muted); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc button { margin-left: auto; background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 0.8rem; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin: 14px 0; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .stat b { display: block; font-size: 1.6rem; letter-spacing: -0.02em; }
+  .stat span { color: var(--muted); font-size: 0.88rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 12px 0; display: block; overflow-x: auto; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+  .tag { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 1px 8px; border-radius: 99px; border: 1px solid currentColor; }
+  .tag.good { color: var(--good); } .tag.warn { color: var(--warn); } .tag.bad { color: var(--bad); } .tag.info { color: var(--accent); }
+  .callout { border-left: 4px solid var(--warn); background: var(--panel); border-radius: 0 10px 10px 0; padding: 10px 16px; margin: 16px 0; }
+  .callout.good { border-color: var(--good); } .callout.info { border-color: var(--accent); }
+  .callout b:first-child { display: block; margin-bottom: 2px; }
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 16px 0; }
+  .step { display: grid; grid-template-columns: 38px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  .step:last-child { border: 0; }
+  .num { width: 30px; height: 30px; border-radius: 50%; background: var(--hl); color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; }
+  .step p { margin: 2px 0; }
+  .file { font: 0.8rem ui-monospace, Consolas, monospace; color: var(--muted); }
+  .bar { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 0.88rem; }
+  .bar .lab { width: 190px; flex: none; }
+  .bar .track { flex: 1; background: var(--code); border-radius: 6px; height: 20px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--accent); border-radius: 6px; }
+  .bar .val { width: 70px; text-align: right; flex: none; font-variant-numeric: tabular-nums; }
+  details { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 10px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  @media (max-width: 560px) { h1 { font-size: 1.7rem; } .bar .lab { width: 120px; } }
+</style>
+</head>
+<body>
+<nav class="toc"><div class="in">
+  <a href="#state">State</a><a href="#why">Why</a><a href="#flow">How it works</a><a href="#code">Code tour</a>
+  <a href="#v02">v0.2</a><a href="#bench">Benchmark</a><a href="#decisions">Decisions</a><a href="#gaps">Gaps</a>
+  <button id="theme" type="button" aria-label="Toggle theme">theme</button>
+</div></nav>
+
+<div class="wrap">
+<header class="top">
+  <h1>agentic-browser, end to end</h1>
+  <p class="lede">An MCP server that gives AI agents a web page as compact text in one call, built on raw Chrome DevTools Protocol, with a benchmark that decides whether any of it is worth doing. This page walks through the code, the numbers and the reasoning, and covers what arrived on GitHub since the last session.</p>
+</header>
+
+<h2 id="state">Where the repo stands</h2>
+<div class="card">
+  <p>Pulling from GitHub changed nothing on <code>master</code> (still <code>8ed8e21</code>, engine <strong>v0.1b</strong>). There is one new remote branch, <code>claude/engine-hardening-v0.2</code>, with a single commit (<code>4516f19</code>, 2026-11-10, 22 files, +753 / −96) written in a separate Claude session. It is <strong>not merged and not benchmarked</strong>. Its own commit message says so.</p>
+</div>
+<div class="grid">
+  <div class="stat"><b>~1,950</b><span>lines of TypeScript on master (src + bench)</span></div>
+  <div class="stat"><b>24 → 41</b><span>tests, master → v0.2 branch (the branch's count; I did not run it)</span></div>
+  <div class="stat"><b>3</b><span>agent-facing tools: <code>open</code>, <code>find</code>, <code>read</code></span></div>
+  <div class="stat"><b>0</b><span>runtime deps beyond the MCP SDK, zod and tsx</span></div>
+</div>
+<div class="callout">
+  <b>Found while reviewing: dead links on master</b>
+  The README on <code>master</code> links to <code>docs/results/*.md</code>, but those reports were never pushed: <code>.gitignore</code> has <code>results/</code>, which also matches <code>docs/results/</code>. The v0.2 branch noticed this and removed the links. I wrote those reports and said they were pushed; they were not. The raw runs are only on this machine.
+</div>
+
+<h2 id="why">The idea, and what the benchmark taught first</h2>
+<p>Browser tools for agents expose a whole browser: Playwright MCP has 25 tools, Vercel's agent-browser 29. The project's first step was a benchmark (60 read-only tasks, 20 sites), run before any engine existed. It showed that on a typical task the <em>page</em> is a small part of the cost.</p>
+<div class="card">
+  <div class="bar"><span class="lab">Playwright MCP</span><span class="track"><span class="fill" style="width:34%"></span></span><span class="val">26.4k</span></div>
+  <div class="bar"><span class="lab">agent-browser</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">77.5k</span></div>
+  <div class="bar"><span class="lab">agentic-browser v0.1b</span><span class="track"><span class="fill" style="width:7%;background:var(--good)"></span></span><span class="val">5.3k</span></div>
+  <p class="file">Median tokens per task, Sonnet 5.5, one repeat. Playwright's page content is only ~2k characters; most tokens are tool definitions re-sent every turn (~8k tokens for Playwright, ~22k for agent-browser).</p>
+</div>
+<p>So the design follows from that: <strong>fewer, shorter tools and fewer turns</strong>. <code>open(url)</code> returns an answer-ready view, so most lookups take one call.</p>
+
+<h2 id="flow">What happens when an agent calls <code>open(url)</code></h2>
+<div class="flow">
+  <div class="step"><div class="num">1</div><div><strong>MCP call arrives</strong><p>The server (<span class="file">src/mcp.ts</span>) exposes three tools with tiny descriptions and passes the call to the engine.</p></div></div>
+  <div class="step"><div class="num">2</div><div><strong>Engine checks the URL</strong><p><span class="file">src/engine.ts</span>: must be absolute http(s). <em>v0.2:</em> local and private addresses are refused; calls are queued so parallel opens don't race on the single tab.</p></div></div>
+  <div class="step"><div class="num">3</div><div><strong>Chrome starts lazily</strong><p><span class="file">src/cdp/chrome.ts</span> launches your installed Chrome headless with a throwaway profile and reads its DevTools address. First call only.</p></div></div>
+  <div class="step"><div class="num">4</div><div><strong>Navigate and settle</strong><p><span class="file">src/browser.ts</span> sends <code>Page.navigate</code>, waits for the load event, then until the network is quiet for 500 ms (capped at 5 s) so data fetched after load is included. It never calls <code>Runtime.enable</code>, a known automation fingerprint.</p></div></div>
+  <div class="step"><div class="num">5</div><div><strong>Capture the page's own JSON</strong><p>From <code>Network.*</code> events, every JSON response is kept (up to 2 MB). Many sites fetch typed data as JSON then render it; reading the JSON skips the scraping.</p></div></div>
+  <div class="step"><div class="num">6</div><div><strong>Extract in one evaluate</strong><p><span class="file">src/page/extract-script.ts</span> runs inside the page and returns <code>innerText</code> (so CSS-hidden text is dropped), headings, visible links, forms with labels and JSON-LD.</p></div></div>
+  <div class="step"><div class="num">7</div><div><strong>Render a compact view</strong><p><span class="file">src/page/view.ts</span>: title, URL, description, structured fields, list of captured JSON, forms, then ~3,000 characters of text with a pointer to <code>find</code> / <code>read</code> for the rest. The full page stays in memory.</p></div></div>
+</div>
+<pre><code># crates.io page, as the agent sees it (abridged)
+# serde - crates.io: Rust Package Registry
+url: https://crates.io/crates/serde/1.0.100
+json loaded by the page (8; find searches it):
+  json#6 https://crates.io/api/v1/crates/serde/1.0.100 {version}
+  json#8 https://crates.io/api/v1/crates/serde/1.0.100/downloads {version_downloads}
+form: GET https://crates.io/search ← q "Search"
+text: ...</code></pre>
+
+<h2 id="code">Code tour</h2>
+<table>
+  <tr><th>File</th><th>What it does</th><th>Why it's shaped this way</th></tr>
+  <tr><td><code>src/cdp/connection.ts</code></td><td>CDP client over Node's built-in <code>WebSocket</code>: request ids, pending map, event listeners, flattened sessions.</td><td>About 100 lines instead of a <code>ws</code> dependency. Rejects all pending calls if the socket closes, so nothing hangs.</td></tr>
+  <tr><td><code>src/cdp/chrome.ts</code></td><td>Finds Chrome per OS, launches it with <code>--remote-debugging-port=0</code>, reads the port from stderr or <code>DevToolsActivePort</code>, kills it and its profile on close.</td><td>Port 0 avoids clashes; two ways to read the address because either can be late. Uses your installed Chrome, so no 150 MB download.</td></tr>
+  <tr><td><code>src/browser.ts</code></td><td>One tab. <code>open()</code>: navigate, settle, capture JSON, extract. Sets a normal user agent instead of "HeadlessChrome".</td><td>The only file that talks CDP for pages. Replacing Chrome with another CDP engine touches this layer only.</td></tr>
+  <tr><td><code>src/page/extract-script.ts</code></td><td>The in-page script, a plain JS string.</td><td>Plain string so no transpiler helpers leak into the page. <code>innerText</code> rather than <code>textContent</code> to drop hidden text.</td></tr>
+  <tr><td><code>src/page/view.ts</code></td><td>Pure functions: <code>renderOpen</code>, <code>findIn</code>, <code>readText</code>, <code>flattenJson</code>, JSON-document handling.</td><td>Pure, so it is unit-tested without a browser. JSON flattens to <code>path = value</code> lines that are cheap to search.</td></tr>
+  <tr><td><code>src/engine.ts</code></td><td>Transport-independent operations; holds the current page.</td><td>MCP, CLI and tests all call the same thing.</td></tr>
+  <tr><td><code>src/mcp.ts</code>, <code>src/cli.ts</code></td><td>MCP stdio server and the <code>open</code> / <code>mcp</code> CLI.</td><td>Tool descriptions are kept very short, since they're paid for on every turn.</td></tr>
+  <tr><td><code>bench/src/*</code></td><td>Task loader, scorer, runner around headless <code>claude -p</code>, tool registry, report.</td><td>See the benchmark section.</td></tr>
+</table>
+
+<h3>The interaction fixes on master (v0.1b)</h3>
+<p>Packagist version data is one big JSON document. Three bugs made it unusable: <code>find</code> searched its text as one giant line; only the first 5,000 values were searched; and the 400k-character text limit made large JSON unparseable. v0.1b searches the captured response by path, searches every value, and shows matches in context.</p>
+<pre><code>doc packages.laravel/framework[1].version = "v9.0.0"
+doc packages.laravel/framework[1].time    = "2022-02-08T15:48:31+00:00"</code></pre>
+
+<h2 id="v02">What's new on the v0.2 branch</h2>
+<p class="lede">Not merged. A security and robustness review of v0.1, plus one new baseline. Each fix has tests.</p>
+<table>
+  <tr><th>Area</th><th>Change</th><th>Assessment</th></tr>
+  <tr><td>Safety</td><td><code>src/net/guard.ts</code>: refuses localhost, private, link-local, carrier-NAT and cloud-metadata addresses. Handles numeric disguises (<code>http://2130706433</code>), IPv6 and IPv4-mapped forms, names that resolve inward, every redirect hop, and the connected address when no proxy is set. <code>--allow-private</code> to opt in.</td><td><span class="tag good">strong</span> A page could otherwise steer an agent at <code>localhost</code>. Documented limits: the redirected request is already sent; proxies disable the address check.</td></tr>
+  <tr><td>Concurrency</td><td>Opens are queued; a failed open clears the page so <code>find</code> never answers from a stale one.</td><td><span class="tag good">fixes a real race</span> Agents send parallel tool calls.</td></tr>
+  <tr><td>JSON capture</td><td><code>src/page/json-rank.ts</code>: 60 candidates ranked own-site first, trackers last, 20 kept; size limit applied to the decoded body.</td><td><span class="tag good">sound</span> <span class="tag warn">heuristic</span> "Same site" is the last two hostname labels, which is wrong for <code>.co.uk</code>-style domains.</td></tr>
+  <tr><td>Settle wait</td><td>Event streams, WebSockets, media and pings no longer count as in-flight.</td><td><span class="tag good">fixes</span> a guaranteed 5 s stall.</td></tr>
+  <tr><td>View</td><td>Starts at <code>&lt;main&gt;</code> when 300+ characters of header precede it.</td><td><span class="tag warn">unmeasured</span> Changes what the agent reads on every page.</td></tr>
+  <tr><td><code>find</code></td><td>Cached flattening, 300-character pattern cap, 2 s budget with a "partial" note.</td><td><span class="tag good">fixes</span> a possible hang on a slow regex.</td></tr>
+  <tr><td>Packaging</td><td><code>bin/agentic-browser.js</code>, <code>bin</code> in package.json, version 0.2.0.</td><td><span class="tag info">fine</span></td></tr>
+  <tr><td>Benchmark</td><td><code>plain-fetch</code>: one <code>fetch</code> tool, plain HTTP, HTML to markdown-like text, no JavaScript. Reports now show median cost per task and cost vs baseline.</td><td><span class="tag good">important</span> The cheapest honest rival was missing.</td></tr>
+  <tr><td>README</td><td>Safety section, "what the benchmark does not show", prior-art table, removed the dead links.</td><td><span class="tag good">more honest</span></td></tr>
+</table>
+<div class="callout info">
+  <b>Recommendation</b>
+  The branch is careful work, and its README corrections are the right ones. Before merging: run its tests locally (I have not), then run the benchmark on v0.2 with <code>plain-fetch</code> in the table, because the main-content change can move the numbers either way.
+</div>
+
+<h2 id="bench">The benchmark</h2>
+<h3>Design</h3>
+<ul>
+  <li><strong>60 tasks, 20 sites.</strong> Sandboxes, versioned or immutable pages and a Wayback snapshot, so answers don't drift. Every answer was checked against page HTML or the site's API, not memory.</li>
+  <li><strong>Agent:</strong> headless Claude Code (<code>claude -p</code>) on your subscription, with its own tools, settings, hooks and plugins off. Fixed overhead is 761 tokens, so counts reflect the tool under test.</li>
+  <li><strong>Scoring:</strong> the agent ends with <code>ANSWER: …</code>; the scorer accepts number, date (±1 day) and text variants. Runs that never use the browser score wrong.</li>
+  <li><strong>Quota-safe runner:</strong> reads Claude Code's rate-limit events, stops at 85% of the 5-hour window, orders jobs repeat-major with tools interleaved so a partial run is still fair, and <code>--resume</code> continues.</li>
+</ul>
+<h3>Results so far (Sonnet 5.5, one repeat each)</h3>
+<table>
+  <tr><th>Tool</th><th>Success</th><th>Median tokens</th><th>Median s</th><th>Mean calls</th></tr>
+  <tr><td>Playwright MCP 0.0.84</td><td>95%</td><td>26,402</td><td>14.3</td><td>3.0</td></tr>
+  <tr><td>Vercel agent-browser 0.41.2</td><td>95%</td><td>77,514</td><td>17.1</td><td>2.3</td></tr>
+  <tr><td><strong>agentic-browser v0.1b</strong></td><td>95%</td><td><strong>5,346</strong></td><td>12.7</td><td>2.2</td></tr>
+  <tr><td>plain-fetch (no browser)</td><td colspan="4"><span class="tag warn">not run yet</span></td></tr>
+  <tr><td>agentic-browser v0.2</td><td colspan="4"><span class="tag warn">not run yet</span></td></tr>
+</table>
+<p>All failures are the three openlibrary.org tasks (a bot check, then connection timeouts). The one earlier v0.1 run scored 98% and 5,385 tokens.</p>
+
+<h2 id="decisions">Decisions, and what was passed over</h2>
+<table>
+  <tr><th>Decision</th><th>Chosen</th><th>Instead of</th><th>Why</th></tr>
+  <tr><td>Order of work</td><td>Benchmark first</td><td>Engine first</td><td>The pitch is a number. Measuring first changed the design before it existed.</td></tr>
+  <tr><td>Browser control</td><td>Raw CDP</td><td>Playwright / Puppeteer</td><td>Direct <code>Network</code> access for JSON capture, no <code>Runtime.enable</code>, swappable engine.</td></tr>
+  <tr><td>Transport</td><td>Built-in WebSocket</td><td><code>ws</code></td><td>One less dependency.</td></tr>
+  <tr><td>Browser</td><td>Installed Chrome</td><td>Bundled Chromium</td><td>No download; same browser as the baselines.</td></tr>
+  <tr><td>Tool surface</td><td>3 read-only tools</td><td>25–29 tools</td><td>Definitions are a per-turn cost when loaded up front.</td></tr>
+  <tr><td>Page form</td><td>Text + structured data</td><td>Accessibility tree / screenshots</td><td>Smaller and usually answer-ready.</td></tr>
+  <tr><td>Data source</td><td>Page's own JSON first</td><td>DOM only</td><td>Already typed.</td></tr>
+  <tr><td>Scope</td><td>Read-only, public</td><td>Clicks, logins</td><td>Win on reading first; removes the riskiest failures.</td></tr>
+  <tr><td>Benchmark agent</td><td><code>claude -p</code></td><td>Custom loop on the SDK</td><td>A real harness, works on a subscription (no API key).</td></tr>
+  <tr><td>Tests</td><td><code>node:test</code></td><td>Vitest</td><td>Vitest 5.1.0's peers broke <code>npm install</code>; no config needed.</td></tr>
+  <tr><td>Network reach <em>(v0.2)</em></td><td>Public only</td><td>Any URL</td><td>Pages shouldn't steer an agent into your network.</td></tr>
+</table>
+
+<h2 id="gaps">Honest gaps</h2>
+<ul>
+  <li><strong>Tool search was off</strong> in every run, to measure all tools alike. Harnesses that load tools on demand don't pay the 8k–22k per turn that produces most of the 5x. <em>The headline gap is partly an artifact of that setting.</em></li>
+  <li><strong>No cheaper rival measured:</strong> <code>plain-fetch</code> exists but has not run. On friendly read-only sites it may do very well.</li>
+  <li><strong>Tokens are not cost.</strong> Re-sent definitions are cache reads at about a tenth of input price; the cost gap is smaller. v0.2's report shows both.</li>
+  <li><strong>One repeat</strong>, and concurrency differed (3 vs 2).</li>
+  <li><strong>Friendly sites only;</strong> nothing here measures bot blocking, logins or cookie walls.</li>
+  <li><strong>Not built yet:</strong> actions, diffs, the per-page-type map cache, typed fields. These are the spec's real bet, and the part not already covered by existing tools.</li>
+  <li><strong>openlibrary.org</strong> needs replacing.</li>
+</ul>
+
+<h2>Suggested next steps</h2>
+<ol>
+  <li>Fix <code>.gitignore</code> (<code>/results/</code>, not <code>results/</code>) so reports can be committed.</li>
+  <li>Review and run the v0.2 branch tests, then merge.</li>
+  <li>One fresh run, three repeats, equal concurrency: v0.2, <code>plain-fetch</code>, Playwright MCP, agent-browser. Add a second run with tool search on.</li>
+  <li>Only then pick the next feature (map cache or typed fields) based on where tokens still go.</li>
+</ol>
+</div>
+<script>
+  (function () {
+    var root = document.documentElement, key = "walkthrough-theme";
+    try { var s = localStorage.getItem(key); if (s) root.setAttribute("data-theme", s); } catch (e) {}
+    document.getElementById("theme").addEventListener("click", function () {
+      var dark = root.getAttribute("data-theme") === "dark" ||
+        (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+      var next = dark ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem(key, next); } catch (e) {}
+    });
+  })();
+</script>
+</body>
+</html>

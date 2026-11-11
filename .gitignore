@@ -10,5 +10,5 @@ build/
 .claude/settings.local.json
 CLAUDE.local.md
 
-# benchmark output (summaries are copied into the README)
-results/
+# benchmark runs (root only; reports under docs/results are committed)
+/results/
