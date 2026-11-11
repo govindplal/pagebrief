@@ -12,3 +12,6 @@ CLAUDE.local.md
 
 # benchmark runs (root only; reports under docs/results are committed)
 /results/
+
+# fine-tuning sets and local data
+/data/

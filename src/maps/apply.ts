@@ -86,14 +86,19 @@ function locate(at: Location, p: PageData): unknown {
   }
 }
 
-/** A number standing on its own: "£1,299.50" yes, the 12 in "ab12cd" or "v1.2.3" no. */
-const FIRST_NUMBER = /(?<![A-Za-z0-9.])-?\d[\d,]*(?:\.\d+)?(?![A-Za-z0-9]|\.\d)/;
+/**
+ * A number standing on its own: "£1,299.50", "168 360" (a space between thousands, as hex.pm
+ * prints it) and "1.234,56" yes; the 12 in "ab12cd" or "v1.2.3" no.
+ */
+const FIRST_NUMBER =
+  /(?<![A-Za-z0-9.])-?(?:\d{1,3}(?:[,\u00a0\u202f\u2009 ']\d{3})+(?:\.\d+)?|\d{1,3}(?:\.\d{3})+,\d+|\d+(?:\.\d+)?)(?![A-Za-z0-9]|\.\d)/;
 
-/** "£1,299.50" -> "1299.50"; null when there is no number standing on its own. */
+/** "£1,299.50" -> "1299.50", "168 360" -> "168360", "1.234,56" -> "1234.56"; null when there is no number standing on its own. */
 export function numberIn(s: string): string | null {
   const m = FIRST_NUMBER.exec(s);
   if (!m) return null;
-  const n = m[0].replace(/,/g, "");
+  const raw = m[0];
+  const n = /^-?\d{1,3}(?:\.\d{3})+,\d+$/.test(raw) ? raw.replace(/\./g, "").replace(",", ".") : raw.replace(/[,\u00a0\u202f\u2009 ']/g, "");
   return Number.isFinite(Number(n)) ? n : null;
 }
 

@@ -65,6 +65,12 @@ test("paths parse the syntax find() prints", () => {
   assert.equal(getPath({ a: [5] }, "a[0]"), 5);
   assert.equal(getPath({ a: 1 }, "a.b.c"), undefined);
   assert.equal(numberIn("£1,299.50 incl."), "1299.50");
+  assert.equal(numberIn("168 360"), "168360", "a space between thousands, as hex.pm prints it");
+  assert.equal(numberIn("16\u202f118 downloads"), "16118");
+  assert.equal(numberIn("1.234,56 EUR"), "1234.56");
+  assert.equal(numberIn("22 available"), "22");
+  assert.equal(numberIn("Page 2 of 40"), "2", "a space before a number that is not three digits is not a thousands separator");
+  assert.equal(numberIn("v1.2.3"), null);
   assert.ok(unsafeRegex("(a+)+b") && unsafeRegex("(\\w*)*") && !unsafeRegex("Price\\s+(\\S+)"));
 });
 
