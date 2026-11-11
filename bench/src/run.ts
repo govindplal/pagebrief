@@ -150,7 +150,7 @@ async function main(): Promise<void> {
   // One shared, empty working directory for every run: the CLI puts its cwd in
   // the system prompt, so a fixed cwd keeps the prompt prefix identical across
   // runs and lets the prompt cache serve it. Per-run files live in scratch dirs.
-  const scratchRoot = path.join(os.tmpdir(), "agentic-browser-bench", meta.runId);
+  const scratchRoot = path.join(os.tmpdir(), "pagebrief-bench", meta.runId);
   const agentCwd = path.join(scratchRoot, "agent");
   fs.mkdirSync(agentCwd, { recursive: true });
 

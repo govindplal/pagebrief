@@ -8,7 +8,7 @@ import path from "node:path";
 
 export function findChrome(): string {
   const candidates = [
-    process.env.AGENTIC_BROWSER_CHROME,
+    process.env.PAGEBRIEF_CHROME,
     process.env.CHROME_PATH,
     ...(process.platform === "win32"
       ? [
@@ -21,7 +21,7 @@ export function findChrome(): string {
         : ["/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/opt/google/chrome/chrome", "/usr/bin/chromium"]),
   ];
   const found = candidates.find((p) => p && fs.existsSync(p));
-  if (!found) throw new Error("Google Chrome not found; set AGENTIC_BROWSER_CHROME to its path");
+  if (!found) throw new Error("Google Chrome not found; set PAGEBRIEF_CHROME to its path");
   return found;
 }
 
@@ -40,7 +40,7 @@ export interface LaunchOptions {
 }
 
 export async function launchChrome(opts: LaunchOptions = {}): Promise<Chrome> {
-  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "agentic-browser-"));
+  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "pagebrief-"));
   const args = [
     "--remote-debugging-port=0",
     `--user-data-dir=${userDataDir}`,
@@ -51,6 +51,8 @@ export async function launchChrome(opts: LaunchOptions = {}): Promise<Chrome> {
     "--disable-background-networking",
     "--mute-audio",
     ...(opts.headless === false ? [] : ["--headless=new"]),
+    // e.g. "--no-sandbox" on Linux CI runners that block Chrome's sandbox.
+    ...(process.env.PAGEBRIEF_CHROME_ARGS ?? "").split(/\s+/).filter(Boolean),
     ...(opts.extraArgs ?? []),
     "about:blank",
   ];

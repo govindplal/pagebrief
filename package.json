@@ -1,16 +1,31 @@
 {
-  "name": "agentic-browser",
-  "version": "0.2.0",
-  "description": "An MCP browser layer that gives AI agents any web page as compact, typed text over raw CDP, with a benchmark against Playwright MCP and agent-browser",
-  "author": "Govind P Lal",
-  "license": "Apache-2.0",
+  "name": "pagebrief",
+  "version": "0.3.0",
+  "description": "An MCP server that gives AI agents any web page as compact typed text over raw Chrome DevTools Protocol, with page maps for repeat visits and a reproducible benchmark",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "browser",
+    "ai-agents",
+    "chrome-devtools-protocol",
+    "cdp",
+    "web-scraping",
+    "llm",
+    "claude"
+  ],
+  "homepage": "https://github.com/govindplal/pagebrief#readme",
+  "bugs": {
+    "url": "https://github.com/govindplal/pagebrief/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/govindplal/agentic-browser"
+    "url": "git+https://github.com/govindplal/pagebrief.git"
   },
+  "license": "Apache-2.0",
+  "author": "Govind P Lal",
   "type": "module",
   "bin": {
-    "agentic-browser": "bin/agentic-browser.js"
+    "pagebrief": "bin/pagebrief.js"
   },
   "files": [
     "bin",
@@ -19,7 +34,6 @@
     "README.md",
     "LICENSE"
   ],
-  "private": true,
   "engines": {
     "node": ">=22"
   },

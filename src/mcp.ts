@@ -20,7 +20,7 @@ async function run(fn: () => string | Promise<string>): Promise<ToolResult> {
 }
 
 export async function serveMcp(engine = new Engine()): Promise<void> {
-  const server = new McpServer({ name: "agentic-browser", version: VERSION });
+  const server = new McpServer({ name: "pagebrief", version: VERSION });
   const readOnly = { readOnlyHint: true, openWorldHint: true };
 
   server.registerTool(

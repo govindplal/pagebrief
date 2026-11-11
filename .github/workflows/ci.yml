@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      # Ubuntu runners block the user namespaces Chrome's sandbox needs.
+      PAGEBRIEF_CHROME_ARGS: ${{ matrix.os == 'ubuntu-latest' && '--no-sandbox' || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+  install:
+    # The published package on a clean machine: pack, install the tarball into
+    # an empty folder, and time install plus a first page read.
+    name: Install from tarball (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PAGEBRIEF_CHROME_ARGS: ${{ matrix.os == 'ubuntu-latest' && '--no-sandbox' || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pack
+        shell: bash
+        run: npm pack --pack-destination "$RUNNER_TEMP"
+      - name: Install and open a page
+        shell: bash
+        run: |
+          mkdir "$RUNNER_TEMP/clean" && cd "$RUNNER_TEMP/clean"
+          start=$(date +%s)
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund "$RUNNER_TEMP"/pagebrief-*.tgz
+          npx pagebrief open https://example.com | tee out.txt
+          end=$(date +%s)
+          grep -q "Example Domain" out.txt
+          echo "install to first result: $((end - start)) s" | tee -a "$GITHUB_STEP_SUMMARY"

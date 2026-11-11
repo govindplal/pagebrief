@@ -52,7 +52,7 @@ export type Lookup = (host: string) => Promise<{ address: string }[]>;
 const systemLookup: Lookup = (host) => dns.lookup(host, { all: true });
 
 export const PRIVATE_HINT =
-  "pass --allow-private (or set AGENTIC_BROWSER_ALLOW_PRIVATE=1) to open local and private-network pages, or if you browse through a proxy on a private address";
+  "pass --allow-private (or set PAGEBRIEF_ALLOW_PRIVATE=1) to open local and private-network pages, or if you browse through a proxy on a private address";
 
 /**
  * Throws when a URL points at this machine or a private network. The URL

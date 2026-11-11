@@ -35,8 +35,8 @@ const agentBrowserCli = (): string => path.resolve("node_modules/agent-browser/b
 const agentBrowserSession = (workDir: string): string => `bench_${path.basename(workDir).replace(/[^A-Za-z0-9_-]/g, "_")}`;
 
 export const TOOLS: Record<string, ToolUnderTest> = {
-  "agentic-browser": {
-    id: "agentic-browser",
+  "pagebrief": {
+    id: "pagebrief",
     description: "This project: raw CDP on headless installed Chrome, 3 read-only tools (open, find, read)",
     version: () => (JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8")) as { version: string }).version,
     server: () => ({
