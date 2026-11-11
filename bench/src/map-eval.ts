@@ -156,7 +156,8 @@ async function main(): Promise<void> {
           if (repairPage) {
             const data = loaded.get(repairPage.id)!;
             const started = performance.now();
-            const repaired = await student.repair(applyMap(broken, data), data).catch(() => null);
+            // An optional field that disappears on every page is what the engine's miss streak catches; treat it as broken here.
+            const repaired = await student.repair(applyMap(broken, data, new Set([field.name])), data).catch(() => null);
             const rep = {
               model: student.name,
               ok: !!repaired,

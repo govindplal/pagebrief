@@ -159,11 +159,18 @@ export function readField(f: MapField, p: PageData): FieldValue {
   return { ...base, ok: true, value };
 }
 
-/** Applies a map to a page: every field read and checked. */
-export function applyMap(map: PageMap, p: PageData): MapResult {
-  const fields = map.fields.map((f) => readField(f, p));
-  const ok = fields.every((f) => f.ok || (f.optional && f.reason === "missing"));
-  return { map, fields, ok };
+/**
+ * Applies a map to a page: every field read and checked. An optional field that
+ * is missing is fine, unless it is named in `suspect` (the engine passes the
+ * optional fields that were missing on several loads in a row: a location that
+ * broke looks the same as a page that lacks the field).
+ */
+export function applyMap(map: PageMap, p: PageData, suspect: ReadonlySet<string> = new Set()): MapResult {
+  const fields = map.fields.map((f) => {
+    const v = readField(f, p);
+    return { ...v, fatal: !v.ok && !(f.optional && v.reason === "missing" && !suspect.has(f.name)) };
+  });
+  return { map, fields, ok: fields.every((f) => !f.fatal) };
 }
 
 /** Same value, allowing for number formatting and whitespace: used to check a map against its own example. */

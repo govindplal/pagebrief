@@ -3,6 +3,8 @@
 // The view is compact by design: in the benchmark, tokens per task are mostly
 // fixed overhead re-sent every turn, so the win comes from answering in one
 // call (open) with little text, and searching (find) instead of dumping pages.
+import { classify, neverAllowed, type Risk } from "../actions/risk.ts";
+import type { ActionItem } from "../actions/script.ts";
 import type { MapResult } from "../maps/types.ts";
 
 export interface FormField {
@@ -34,6 +36,8 @@ export interface RawPage {
   /** <meta name|property> tags, first 60. */
   meta?: Record<string, string>;
   signals?: PageSignals;
+  /** Actionable elements, when the engine runs with actions on. */
+  actions?: ActionItem[];
 }
 
 export interface PageSignals {
@@ -209,6 +213,55 @@ export interface RenderOptions {
   pageId?: string;
   /** The page map's fields for this page, when a map matched it. */
   map?: MapResult;
+  /** With actions on: the most risky action this server allows; the page's actions are listed. */
+  allow?: Risk;
+}
+
+/** Action ids are the element's position + 1: "a3" is element 2. */
+export const actionId = (index: number): string => `a${index + 1}`;
+export const actionIndex = (id: string): number | null => {
+  const m = /^a(\d+)$/i.exec(id.trim());
+  return m && Number(m[1]) >= 1 ? Number(m[1]) - 1 : null;
+};
+
+/** The page's actions as lines for the agent: id, risk label, what it is. */
+export function renderActions(p: PageData, allow: Risk, max = 40): string[] {
+  const shown = (p.actions ?? []).filter((a) => !neverAllowed(a));
+  if (!shown.length) return [];
+  const seen = new Set<string>();
+  const uniq = shown.filter((a) => {
+    const k = `${a.kind}|${a.text}|${a.href ?? ""}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  // Controls first (they are few and matter most), then links to fill the rest.
+  const controls = uniq.filter((a) => a.kind !== "link").slice(0, 25);
+  const links = uniq.filter((a) => a.kind === "link").slice(0, Math.max(0, max - controls.length));
+  const picked = [...controls, ...links].sort((a, b) => a.index - b.index);
+  const lines = [`actions (${picked.length} of ${shown.length}; do(id, value?, submit?); this server allows ${allow} actions):`];
+  for (const a of picked) {
+    const risk = classify(a);
+    const what =
+      a.kind === "select" ? `select "${a.text}" [${(a.options ?? []).slice(0, 8).join("|")}]` : a.kind === "link" ? `link "${a.text}"` : `${a.kind} "${a.text}"`;
+    lines.push(`  ${actionId(a.index)} [${risk}] ${clip(what, 100)}`);
+  }
+  return lines;
+}
+
+/** Lines added and removed between two states of a page (order ignored; repeats counted). */
+export function diffText(before: string, after: string): { added: string[]; removed: string[] } {
+  const lines = (t: string) => t.split("\n").map((l) => l.trim()).filter(Boolean);
+  const count = new Map<string, number>();
+  for (const l of lines(before)) count.set(l, (count.get(l) ?? 0) + 1);
+  const added: string[] = [];
+  for (const l of lines(after)) {
+    const n = count.get(l) ?? 0;
+    if (n > 0) count.set(l, n - 1);
+    else added.push(l);
+  }
+  const removed = [...count].flatMap(([l, n]) => Array<string>(n).fill(l));
+  return { added, removed };
 }
 
 const fieldLine = (f: MapResult["fields"][number]): string =>
@@ -231,11 +284,12 @@ export function renderOpen(p: PageData, textBudget = 3000, opts: RenderOptions =
   const m = opts.map;
   if (m) {
     const where = `${m.map.host} ${m.map.pattern}`;
-    const good = m.fields.filter((f) => f.ok || (f.optional && f.reason === "missing"));
+    const good = m.fields.filter((f) => !f.fatal);
     if (m.ok) {
       lines.push(`page map: ${m.map.pageType} (${where}), ${m.fields.length} fields checked${m.repaired ? `, ${m.repaired.join(", ")} repaired just now` : ""}:`);
       lines.push(...m.fields.map(fieldLine));
       lines.push(`[text not shown (${p.text.length} chars): find(pattern) or read(from=0) for anything else; ${p.links.length} links]`);
+      if (opts.allow) lines.push(...renderActions(p, opts.allow));
       return lines.join("\n");
     }
     const failed = m.fields.filter((f) => !good.includes(f));
@@ -273,6 +327,7 @@ export function renderOpen(p: PageData, textBudget = 3000, opts: RenderOptions =
     lines.push(`json document: ${shape(doc)}, ${values.length} values${values.length > 40 ? " (first 40 shown)" : ""}:`);
     lines.push(...values.slice(0, 40).map((l) => `  ${clip(l, 160)}`));
     lines.push("[find(pattern) searches every value by path]");
+    if (opts.allow) lines.push(...renderActions(p, opts.allow));
     return lines.join("\n");
   }
 
@@ -285,6 +340,7 @@ export function renderOpen(p: PageData, textBudget = 3000, opts: RenderOptions =
   lines.push(p.text.slice(start, end));
   if (end < p.text.length) lines.push(`[more: read(from=${end}); find(pattern) searches all text, ${p.links.length} links and JSON]`);
   else if (p.links.length) lines.push(`[${p.links.length} links: find(pattern) returns their URLs]`);
+  if (opts.allow) lines.push(...renderActions(p, opts.allow));
   return lines.join("\n");
 }
 

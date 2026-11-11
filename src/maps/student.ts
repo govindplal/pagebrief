@@ -31,7 +31,7 @@ export class LlmStudent implements MapRepairer {
   }
 
   async repair(result: MapResult, page: PageData): Promise<PageMap | null> {
-    const broken = result.fields.filter((f) => !f.ok && !(f.optional && f.reason === "missing"));
+    const broken = result.fields.filter((f) => f.fatal);
     if (!broken.length) return null;
     const lines = broken.map((b) => {
       const f = result.map.fields.find((x) => x.name === b.name)!;

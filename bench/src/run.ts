@@ -294,6 +294,9 @@ async function main(): Promise<void> {
     console.log(`Continue with: npm run bench -- --resume ${path.relative(process.cwd(), outDir)}`);
   }
   console.log(`results: ${outDir}`);
+  // One line a driver script can parse (bench/scripts/campaign.ts).
+  const last = usage as RateLimit | null;
+  console.log(`RUN_SUMMARY ${JSON.stringify({ dir: outDir, remaining, resetsAt: last?.resetsAt ?? null, fiveHour: last?.fiveHour ?? null, sevenDay: last?.sevenDay ?? null, weekly: !!(stopReason as string | null)?.startsWith("7-day"), stopReason: stopReason as string | null })}`);
 }
 
 main().catch((err: unknown) => {

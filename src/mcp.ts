@@ -1,6 +1,7 @@
 // MCP server over stdio. Three read-only tools with short descriptions: tool
 // definitions are re-sent on every agent turn, so each word here costs tokens
-// on every step of every task.
+// on every step of every task. A fourth tool, do, exists only when the server
+// is started with --allow-actions.
 import fs from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -51,6 +52,24 @@ export async function serveMcp(engine = new Engine()): Promise<void> {
     },
     ({ from, length, page }) => run(() => engine.read(from, length, page)),
   );
+
+  if (engine.actionPolicy) {
+    server.registerTool(
+      "do",
+      {
+        description:
+          "Act on the open page using an action id from open or do (e.g. a3): follow a link, press a button, type into a field (value; submit sends its form) or choose an option. Returns what changed. Each action is labelled read, write or dangerous; the server refuses what its policy does not allow.",
+        inputSchema: {
+          id: z.string().describe("action id, e.g. a3"),
+          value: z.string().optional().describe("text to type, or the option to choose"),
+          submit: z.boolean().optional().describe("submit the field's form after filling it"),
+          page,
+        },
+        annotations: { readOnlyHint: false, destructiveHint: engine.actionPolicy === "dangerous", idempotentHint: false, openWorldHint: true },
+      },
+      ({ id, value, submit, page }) => run(() => engine.act(id, value, submit, page)),
+    );
+  }
 
   let closing = false;
   const shutdown = async () => {

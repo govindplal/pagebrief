@@ -47,7 +47,8 @@
     "bench:teach": "tsx bench/src/teach.ts",
     "bench:maps": "tsx bench/src/map-eval.ts",
     "bench:grade": "tsx bench/src/grade.ts",
-    "bench:eval": "tsx bench/src/eval-report.ts"
+    "bench:eval": "tsx bench/src/eval-report.ts",
+    "bench:campaign": "tsx bench/scripts/campaign.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

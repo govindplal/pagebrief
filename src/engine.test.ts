@@ -236,3 +236,63 @@ test("a taught map answers the next page of the same type from fields", { skip: 
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("an optional field missing on three loads in a row is treated as broken and repaired", { skip: !hasChrome, timeout: 90_000 }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pagebrief-maps-"));
+  const store = new FileMapStore(dir);
+  const taught = finishMap(
+    {
+      pageType: "item page",
+      pattern: "/items/*",
+      fields: [
+        { name: "price", type: "number", example: "10.50", at: { from: "text", regex: String.raw`^Price: (\S+)` } },
+        { name: "colour", type: "string", optional: true, example: "blue", at: { from: "text", regex: String.raw`^Colour: (\S+)` } },
+      ],
+    },
+    { url: `${base}/items/1`, title: "Item 1", description: "", lang: "", text: "Item 1\nPrice: 10.50 USD\nColour: blue", headings: [], links: [], forms: [], jsonLd: [], json: [] },
+    undefined,
+  ).map;
+  // The site relabelled "Colour" as "Colour:" -> still present, so use a page that lacks the label entirely.
+  store.save({ ...taught, fields: taught.fields.map((f) => (f.name === "colour" ? { ...f, at: { from: "text" as const, regex: String.raw`^Shade: (\S+)` } } : f)) });
+  const repairs: string[] = [];
+  const repairer = {
+    name: "fake",
+    repair: async (r: { fields: { name: string; fatal?: boolean }[]; map: typeof taught }) => {
+      repairs.push(r.fields.filter((f) => f.fatal).map((f) => f.name).join(","));
+      return { ...r.map, fields: r.map.fields.map((f) => (f.name === "colour" ? { ...f, at: { from: "text" as const, regex: String.raw`^Colour: (\S+)` } } : f)), source: "student" as const };
+    },
+  };
+  const e = new Engine({ settleTimeoutMs: 3000, allowPrivate: true, extraArgs: ["--no-proxy-server"], maps: { store, repairer } });
+  try {
+    for (const n of [2, 3, 4]) assert.match(await e.open(`${base}/items/${n}`), /page map: item page .*, 2 fields checked:\n {2}price = \d+\.50\n {2}colour = \(none\)/, `load ${n}: missing is tolerated`);
+    const fourth = await e.open(`${base}/items/5`);
+    assert.deepEqual(repairs, ["colour"], "the fourth load treats the field as broken and asks the student");
+    assert.match(fourth, /repaired just now/);
+    assert.match(fourth, /colour = blue/);
+    assert.deepEqual(e.mapEvents.map((x) => x.kind), ["hit", "hit", "hit", "broken", "repaired"]);
+  } finally {
+    await e.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("the engine can drive a browser that is already running (--cdp-url), by http or ws address", { skip: !hasChrome, timeout: 90_000 }, async () => {
+  const { launchChrome } = await import("./cdp/chrome.ts");
+  const chrome = await launchChrome({ extraArgs: ["--no-proxy-server"] });
+  try {
+    const port = new URL(chrome.wsEndpoint).port;
+    for (const cdpUrl of [`http://127.0.0.1:${port}`, chrome.wsEndpoint]) {
+      const remote = new Engine({ cdpUrl, allowPrivate: true, settleTimeoutMs: 3000 });
+      try {
+        assert.match(await remote.open(`${base}/`), /^# Blue Kettle/);
+      } finally {
+        await remote.close();
+      }
+    }
+    // Closing an engine leaves a browser it did not launch running.
+    const again = await fetch(`http://127.0.0.1:${port}/json/version`);
+    assert.ok(again.ok, "the external browser is still up");
+  } finally {
+    await chrome.kill();
+  }
+});

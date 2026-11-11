@@ -82,6 +82,15 @@ export const TOOLS: Record<string, ToolUnderTest> = {
       args: ["--import", pathToFileURL(path.resolve("node_modules/tsx/dist/loader.mjs")).href, path.resolve("bench/src/plain-fetch.ts")],
     }),
   },
+  "screenshot-browser": {
+    id: "screenshot-browser",
+    description: "A screenshot-only browser (bench/src/screenshot-browser.ts): goto, scroll, click, type; every tool returns a JPEG of the page, nothing else",
+    version: () => "1.0.0",
+    server: () => ({
+      command: process.execPath,
+      args: ["--import", pathToFileURL(path.resolve("node_modules/tsx/dist/loader.mjs")).href, path.resolve("bench/src/screenshot-browser.ts")],
+    }),
+  },
   "playwright-mcp": {
     id: "playwright-mcp",
     description: "Playwright MCP with default settings (accessibility snapshots), headless installed Chrome",

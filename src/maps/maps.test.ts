@@ -7,6 +7,7 @@ import { renderOpen, type PageData } from "../page/view.ts";
 import { applyMap, getPath, numberIn, parsePath, readField, unsafeRegex } from "./apply.ts";
 import { parseJsonReply, type Llm } from "./llm.ts";
 import { hostKey, matchPattern, proposePattern } from "./pattern.ts";
+import { exportMaps, importMaps, verifyMap } from "./share.ts";
 import { FileMapStore } from "./store.ts";
 import { LlmStudent } from "./student.ts";
 import { finishMap, LlmTeacher } from "./teacher.ts";
@@ -179,5 +180,74 @@ test("the file store finds the most specific matching map and survives a bad fil
     assert.equal(new FileMapStore(dir).find("https://shop.example/about"), undefined);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("sharing: public maps export without cost data, local hosts are left out, imports are screened and marked", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pagebrief-share-"));
+  try {
+    const mine = new FileMapStore(path.join(dir, "mine"));
+    mine.save({ ...kettleMap(), teacher: { model: "m", costUsd: 1, tokens: 1, seconds: 1 }, source: "student" });
+    mine.save({ ...kettleMap(), host: "localhost", exampleUrl: "http://localhost/catalogue/a/index.html" });
+    mine.save({ ...kettleMap(), host: "192.168.1.5", exampleUrl: "http://192.168.1.5/catalogue/a/index.html" });
+    const { bundle, skipped } = exportMaps(mine, undefined);
+    assert.deepEqual(bundle.maps.map((m) => m.host), ["shop.example"]);
+    assert.equal(bundle.maps[0]!.teacher, undefined);
+    assert.equal(bundle.maps[0]!.source, "teacher");
+    assert.deepEqual(skipped.map((s) => s.split(" ")[0]).sort(), ["192.168.1.5/catalogue/*/index.html", "localhost/catalogue/*/index.html"]);
+
+    const theirs = new FileMapStore(path.join(dir, "theirs"));
+    const evil = { ...kettleMap(), host: "evil.example", exampleUrl: "https://evil.example/catalogue/x/index.html", fields: [{ ...kettleMap().fields[0]!, at: { from: "text", regex: "(a+)+$" } }] };
+    const wrongHost = { ...kettleMap(), exampleUrl: "https://elsewhere.example/catalogue/x/index.html" };
+    const noMatch = { ...kettleMap(), exampleUrl: "https://shop.example/other/x" };
+    const junk = { host: 1 };
+    const report = await importMaps({ ...bundle, maps: [...bundle.maps, evil, wrongHost, noMatch, junk] }, theirs, { from: "friend.json" });
+    assert.deepEqual(report.imported, ["shop.example/catalogue/*/index.html"]);
+    assert.deepEqual(report.rejected.map((r) => r.why.split(":")[0]), ["field price", "the example URL is on a different host", "the pattern does not match the map's own example URL", "invalid"]);
+    const got = theirs.find("https://shop.example/catalogue/a/index.html")!;
+    assert.equal(got.source, "imported");
+    assert.equal(got.importedFrom, "friend.json");
+    // A map you already have is kept unless you say so.
+    const again = await importMaps(bundle, theirs, { from: "x" });
+    assert.match(again.rejected[0]!.why, /already have a imported map/);
+    assert.equal((await importMaps(bundle, theirs, { from: "x", replace: true })).imported.length, 1);
+    await assert.rejects(importMaps({ format: "other" }, theirs, { from: "x" }), /not a pagebrief-maps\/1 bundle/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("verifying a shared map keeps only the fields that still read the example value", () => {
+  const stale = { ...kettleMap(), fields: kettleMap().fields.map((f) => (f.name === "price" ? { ...f, example: "999.00" } : f)) };
+  const { map, dropped } = verifyMap(stale, page());
+  assert.deepEqual(dropped.map((d) => d.name), ["price", "sale_price"]);
+  assert.match(dropped[0]!.why, /reads "1299.50", the map says "999.00"/);
+  assert.deepEqual(map!.fields.map((f) => f.name), ["sku", "stock", "tags", "kind"]);
+  assert.equal(verifyMap({ ...kettleMap(), fields: [kettleMap().fields[0]!] }, page({ text: "nothing" })).map, null);
+});
+
+test("the Ollama client posts the prompt and reports token counts", async () => {
+  const http = await import("node:http");
+  let body: { model: string; format: string; messages: { role: string; content: string }[] } | undefined;
+  const server = http.createServer((req, res) => {
+    let raw = "";
+    req.on("data", (c) => (raw += c));
+    req.on("end", () => {
+      body = JSON.parse(raw);
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ message: { content: '{"fields":[]}' }, prompt_eval_count: 120, eval_count: 30 }));
+    });
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  try {
+    const { Ollama, llmFromSpec } = await import("./llm.ts");
+    const reply = await new Ollama("gemma3:4b", `http://127.0.0.1:${(server.address() as { port: number }).port}`).complete("sys", "user");
+    assert.equal(reply.text, '{"fields":[]}');
+    assert.deepEqual({ model: reply.usage.model, tokens: reply.usage.tokens, cost: reply.usage.costUsd }, { model: "ollama:gemma3:4b", tokens: 150, cost: 0 });
+    assert.deepEqual({ model: body!.model, format: body!.format, roles: body!.messages.map((m) => m.role) }, { model: "gemma3:4b", format: "json", roles: ["system", "user"] });
+    assert.equal(llmFromSpec("ollama:gemma3:4b").name, "ollama:gemma3:4b");
+    assert.equal(llmFromSpec("claude-haiku-5-5").name, "claude-haiku-5-5");
+  } finally {
+    server.close();
   }
 });

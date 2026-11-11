@@ -56,8 +56,10 @@ export const PageMapSchema = z.object({
   /** The page the map was written from. */
   exampleUrl: z.string(),
   createdAt: z.string(),
-  /** Who wrote the current version: the teacher, or the student after a repair. */
-  source: z.enum(["teacher", "student"]),
+  /** Who wrote the current version: the teacher, the student after a repair, or an import from someone else. */
+  source: z.enum(["teacher", "student", "imported"]),
+  /** For imported maps: where the bundle came from (a label the importer gave it). */
+  importedFrom: z.string().max(200).optional(),
   teacher: UsageSchema.optional(),
   repairs: z.array(z.object({ at: z.string(), url: z.string(), fields: z.array(z.string()), usage: UsageSchema })).optional(),
 });
@@ -72,6 +74,8 @@ export interface FieldValue {
   ok: boolean;
   optional?: boolean;
   reason?: string;
+  /** The field counts against the map: it failed its check, or it is optional but has been missing too often. */
+  fatal?: boolean;
 }
 
 export interface MapResult {

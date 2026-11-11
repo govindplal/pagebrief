@@ -8,12 +8,17 @@
 // screen. Screen-reader text (the "visually hidden" pattern: a 1px box that is
 // clipped) is kept, because it is real content. The elements are hidden for
 // the moment innerText is read and then restored, so the page is unchanged.
+import { ENUMERATE_JS } from "../actions/script.ts";
+
 export interface ExtractOptions {
   dropHidden?: boolean;
+  /** Also list the actionable elements (links, buttons, fields), for the action tools. */
+  withActions?: boolean;
 }
 
 export const extractScript = (opts: ExtractOptions = {}): string => String.raw`(() => {
   const DROP_HIDDEN = ${opts.dropHidden ? "true" : "false"};
+  ${opts.withActions ? ENUMERATE_JS : ""}
   const clean = (s, n) => (s || "").replace(/\s+/g, " ").trim().slice(0, n);
   const visible = (el) => !!(el.offsetParent || el.getClientRects().length);
   const body = document.body;
@@ -128,6 +133,7 @@ export const extractScript = (opts: ExtractOptions = {}): string => String.raw`(
       forms,
       jsonLd,
       meta: metaTags,
+      actions: ${opts.withActions ? "pbList().map((x) => x.info)" : "undefined"},
       signals: {
         challenge,
         hasPassword,
