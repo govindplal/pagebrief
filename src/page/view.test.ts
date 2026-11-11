@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { cutText, findIn, flattenJson, readText, renderOpen, textStart, type PageData } from "./view.ts";
+import { cutText, detectBlock, findIn, flattenJson, readText, renderOpen, textStart, type PageData } from "./view.ts";
 
 const page = (over: Partial<PageData> = {}): PageData => ({
   url: "https://shop.example/p/1",
@@ -112,4 +112,20 @@ test("find() refuses very long patterns and stops when it runs out of time", () 
   const big = page({ text: Array.from({ length: 5000 }, (_, i) => `line ${i}`).join("\n") });
   assert.match(findIn(big, "line", 40, -1), /search stopped after -1 ms; results are partial/);
   assert.match(findIn(big, "line 4999"), /^1 matches/);
+});
+
+test("a bot check or a login wall is reported, not returned as content", () => {
+  const sig = { challenge: false, hasPassword: false, hiddenChars: 0, hiddenElements: 0 };
+  const cf = page({ title: "Just a moment...", text: "Checking if the site connection is secure", signals: sig });
+  assert.equal(detectBlock(cf)?.kind, "bot check");
+  const v = renderOpen(cf);
+  assert.match(v, /^# Just a moment\.\.\.\nurl: .*\nblocked: this looks like a bot check \(title "Just a moment\.\.\."\), not the page's content/);
+  assert.match(v, /\[read\(from=0\) shows its \d+ chars of text anyway\]$/);
+  assert.equal(detectBlock(page({ title: "Books", text: "Please verify you are a human to continue." }))?.kind, "bot check");
+  assert.equal(detectBlock(page({ title: "Shop", text: "x", signals: { ...sig, challenge: true } }))?.kind, "bot check");
+  assert.equal(detectBlock(page({ url: "https://site.example/login?next=/", title: "Welcome", text: "Email\nPassword", signals: { ...sig, hasPassword: true } }))?.kind, "login wall");
+  // Long pages that merely mention a captcha, and ordinary pages with a sign-in box, are content.
+  assert.equal(detectBlock(page({ title: "How CAPTCHA works", text: "captcha ".repeat(1000) })), null);
+  assert.equal(detectBlock(page({ title: "Blue Kettle", signals: { ...sig, hasPassword: true } })), null);
+  assert.equal(detectBlock(page()), null);
 });

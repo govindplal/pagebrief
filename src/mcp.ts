@@ -32,23 +32,24 @@ export async function serveMcp(engine = new Engine()): Promise<void> {
     },
     ({ url }) => run(() => engine.open(url)),
   );
+  const page = z.string().optional().describe("page id from open, e.g. p2; default: the last opened");
   server.registerTool(
     "find",
     {
       description: "Search the open page: all visible text lines, links (with URLs), and loaded JSON. Case-insensitive regex.",
-      inputSchema: { pattern: z.string() },
+      inputSchema: { pattern: z.string(), page },
       annotations: readOnly,
     },
-    ({ pattern }) => run(() => engine.find(pattern)),
+    ({ pattern, page }) => run(() => engine.find(pattern, page)),
   );
   server.registerTool(
     "read",
     {
       description: "Read more of the open page's text from a character offset.",
-      inputSchema: { from: z.number().int().min(0), length: z.number().int().min(200).max(20000).optional() },
+      inputSchema: { from: z.number().int().min(0), length: z.number().int().min(200).max(20000).optional(), page },
       annotations: readOnly,
     },
-    ({ from, length }) => run(() => engine.read(from, length)),
+    ({ from, length, page }) => run(() => engine.read(from, length, page)),
   );
 
   let closing = false;

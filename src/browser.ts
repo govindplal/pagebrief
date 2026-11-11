@@ -7,7 +7,7 @@
 import { launchChrome, type Chrome, type LaunchOptions } from "./cdp/chrome.ts";
 import { CdpConnection } from "./cdp/connection.ts";
 import { assertPublicUrl, isPrivateAddress, PRIVATE_HINT, usesProxyEnv } from "./net/guard.ts";
-import { EXTRACT_SCRIPT } from "./page/extract-script.ts";
+import { extractScript } from "./page/extract-script.ts";
 import { rankJson } from "./page/json-rank.ts";
 import type { CapturedJson, PageData, RawPage } from "./page/view.ts";
 
@@ -24,6 +24,8 @@ export interface BrowserOptions extends LaunchOptions {
    * proxy's address, so this defaults to off when a proxy variable is set.
    */
   checkRemoteAddress?: boolean;
+  /** Drop rendered but invisible text (zero opacity, zero font size, off screen). On by default. */
+  dropHidden?: boolean;
 }
 
 const MAX_JSON_BYTES = 2_000_000;
@@ -156,7 +158,7 @@ export class Browser {
         throw refusal;
       }
       await Promise.allSettled(bodyFetches);
-      const raw = await this.evaluate<RawPage>(EXTRACT_SCRIPT);
+      const raw = await this.evaluate<RawPage>(extractScript({ dropHidden: this.opts.dropHidden ?? true }));
       return { ...raw, json: rankJson(json, raw.url, MAX_JSON_RESPONSES) };
     } finally {
       off();

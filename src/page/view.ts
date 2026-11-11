@@ -3,6 +3,7 @@
 // The view is compact by design: in the benchmark, tokens per task are mostly
 // fixed overhead re-sent every turn, so the win comes from answering in one
 // call (open) with little text, and searching (find) instead of dumping pages.
+import type { MapResult } from "../maps/types.ts";
 
 export interface FormField {
   name: string;
@@ -30,6 +31,18 @@ export interface RawPage {
   links: { text: string; href: string }[];
   forms: Form[];
   jsonLd: string[];
+  /** <meta name|property> tags, first 60. */
+  meta?: Record<string, string>;
+  signals?: PageSignals;
+}
+
+export interface PageSignals {
+  /** A bot-check widget (Cloudflare, hCaptcha, reCAPTCHA, DataDome, PerimeterX) is on the page. */
+  challenge: boolean;
+  hasPassword: boolean;
+  /** Rendered but invisible text that was dropped (zero opacity, zero font size, off screen). */
+  hiddenChars: number;
+  hiddenElements: number;
 }
 
 /** A JSON response the page loaded itself (XHR/fetch, or a JSON document). */
@@ -159,9 +172,77 @@ function linesOf(p: PageData): PageLines {
   return lines;
 }
 
+const BOT_TITLE =
+  /just a moment|attention required|access denied|are you a (robot|human)|verify(ing)? (that )?you are (a )?human|security check|human verification|pardon our interruption|request unsuccessful|bot (check|verification)|ddos-guard|captcha/i;
+const BOT_TEXT =
+  /verify(ing)? (that )?you are (a )?human|checking (if the site connection is secure|your browser)|press (&|and) hold|enable javascript and cookies to continue|unusual traffic from your (computer|network)|are you a robot|complete the security check|why have i been blocked|needs to review the security of your connection|verify you are not a (robot|bot)/i;
+const LOGIN_URL = /(log|sign)[-_]?in|\/auth\b|\/sso\b|\/account\/?$/i;
+
+export interface Block {
+  kind: "bot check" | "login wall";
+  why: string;
+}
+
+/** A page that is a bot check or a login wall rather than the content the agent asked for. */
+export function detectBlock(p: PageData): Block | null {
+  const short = p.text.length < 3000;
+  const title = BOT_TITLE.exec(p.title);
+  if (short && title) return { kind: "bot check", why: `title "${clip(p.title, 60)}"` };
+  const text = BOT_TEXT.exec(p.text);
+  if (short && text) return { kind: "bot check", why: `the page says "${clip(text[0], 60)}"` };
+  if (p.signals?.challenge && p.text.length < 1500) return { kind: "bot check", why: "a challenge widget fills the page" };
+  let path = "";
+  try {
+    path = new URL(p.url).pathname;
+  } catch {
+    // keep empty
+  }
+  if (p.signals?.hasPassword && p.text.length < 2500 && (LOGIN_URL.test(path) || /(log|sign)[ -]?in/i.test(p.title)))
+    return { kind: "login wall", why: "the page is a sign-in form" };
+  return null;
+}
+
+export interface RenderOptions {
+  /** Shown when the engine holds several pages, so find/read can name one. */
+  pageId?: string;
+  /** The page map's fields for this page, when a map matched it. */
+  map?: MapResult;
+}
+
+const fieldLine = (f: MapResult["fields"][number]): string =>
+  `  ${f.name} = ${f.ok ? `${clip(f.value!, 200)}${f.unit ? ` ${f.unit}` : ""}` : "(none)"}`;
+
 /** The result of open(url): everything an agent usually needs in one call. */
-export function renderOpen(p: PageData, textBudget = 3000): string {
+export function renderOpen(p: PageData, textBudget = 3000, opts: RenderOptions = {}): string {
   const lines = [`# ${p.title || "(untitled)"}`, `url: ${p.url}`];
+  if (opts.pageId) lines.push(`page: ${opts.pageId}`);
+
+  const block = detectBlock(p);
+  if (block) {
+    lines.push(
+      `blocked: this looks like a ${block.kind} (${block.why}), not the page's content. The site did not serve the page to this browser; try another source.`,
+      `[read(from=0) shows its ${p.text.length} chars of text anyway]`,
+    );
+    return lines.join("\n");
+  }
+
+  const m = opts.map;
+  if (m) {
+    const where = `${m.map.host} ${m.map.pattern}`;
+    const good = m.fields.filter((f) => f.ok || (f.optional && f.reason === "missing"));
+    if (m.ok) {
+      lines.push(`page map: ${m.map.pageType} (${where}), ${m.fields.length} fields checked${m.repaired ? `, ${m.repaired.join(", ")} repaired just now` : ""}:`);
+      lines.push(...m.fields.map(fieldLine));
+      lines.push(`[text not shown (${p.text.length} chars): find(pattern) or read(from=0) for anything else; ${p.links.length} links]`);
+      return lines.join("\n");
+    }
+    const failed = m.fields.filter((f) => !good.includes(f));
+    lines.push(
+      `page map: ${m.map.pageType} (${where}): ${good.length} of ${m.fields.length} fields checked; ` +
+        `failed, so the page follows (the map may be stale): ${failed.map((f) => `${f.name} (${f.reason})`).join(", ")}`,
+    );
+    lines.push(...good.map(fieldLine));
+  }
   if (p.description) lines.push(`description: ${clip(p.description, 300)}`);
 
   const ld = parseJsonLd(p.jsonLd)
