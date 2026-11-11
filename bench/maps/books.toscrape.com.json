@@ -1,0 +1,135 @@
+{
+  "host": "books.toscrape.com",
+  "maps": [
+    {
+      "version": 1,
+      "host": "books.toscrape.com",
+      "pattern": "/catalogue/*/index.html",
+      "pageType": "book product page",
+      "fields": [
+        {
+          "name": "title",
+          "type": "string",
+          "optional": false,
+          "example": "A Light in the Attic",
+          "at": {
+            "from": "text",
+            "regex": "^([^\\n]+)\\n+£\\d"
+          }
+        },
+        {
+          "name": "upc",
+          "type": "string",
+          "optional": false,
+          "example": "a897fe39b1053632",
+          "at": {
+            "from": "text",
+            "regex": "^UPC\\t(\\S+)"
+          }
+        },
+        {
+          "name": "product_type",
+          "type": "string",
+          "optional": false,
+          "example": "Books",
+          "at": {
+            "from": "text",
+            "regex": "^Product Type\\t([^\\n]+)"
+          }
+        },
+        {
+          "name": "price_excl_tax",
+          "type": "number",
+          "unit": "GBP",
+          "optional": false,
+          "example": "51.77",
+          "at": {
+            "from": "text",
+            "regex": "^Price \\(excl\\. tax\\)\\t£([\\d.]+)"
+          }
+        },
+        {
+          "name": "price_incl_tax",
+          "type": "number",
+          "unit": "GBP",
+          "optional": false,
+          "example": "51.77",
+          "at": {
+            "from": "text",
+            "regex": "^Price \\(incl\\. tax\\)\\t£([\\d.]+)"
+          }
+        },
+        {
+          "name": "tax",
+          "type": "number",
+          "unit": "GBP",
+          "optional": false,
+          "example": "0.00",
+          "at": {
+            "from": "text",
+            "regex": "^Tax\\t£([\\d.]+)"
+          }
+        },
+        {
+          "name": "availability",
+          "type": "string",
+          "optional": false,
+          "example": "In stock (22 available)",
+          "at": {
+            "from": "text",
+            "regex": "^Availability\\t([^\\n]+)"
+          }
+        },
+        {
+          "name": "stock_count",
+          "type": "integer",
+          "optional": true,
+          "example": "22",
+          "at": {
+            "from": "text",
+            "regex": "^Availability\\t[^\\n]*?\\((\\d+) available\\)"
+          }
+        },
+        {
+          "name": "number_of_reviews",
+          "type": "integer",
+          "optional": false,
+          "example": "0",
+          "at": {
+            "from": "text",
+            "regex": "^Number of reviews\\t(\\d+)"
+          }
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "optional": true,
+          "example": "It's hard to imagine a world without A Light in the Attic. This now-classic collection of poetry and drawings from Shel Silverstein celebrates its 20th anniversary with this special edition. Silverstein's humorous and creative verse can amuse the dowdiest of readers. Lemon-faced adults and fidgety k",
+          "at": {
+            "from": "meta",
+            "name": "description"
+          }
+        },
+        {
+          "name": "created",
+          "type": "string",
+          "optional": true,
+          "example": "24th Jun 2016 09:29",
+          "at": {
+            "from": "meta",
+            "name": "created"
+          }
+        }
+      ],
+      "exampleUrl": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html",
+      "createdAt": "2026-11-11T11:21:21.455Z",
+      "source": "teacher",
+      "teacher": {
+        "model": "claude-opus-5-5",
+        "costUsd": 0.049532,
+        "tokens": 3737,
+        "seconds": 16
+      }
+    }
+  ]
+}

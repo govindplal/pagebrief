@@ -26,13 +26,20 @@ const TaskFileSchema = z.object({
   version: z.number(),
   verified: z.string(),
   notes: z.string(),
+  /** Repeat-visit track: one page per site for the teacher to map; never shown to the agent. */
+  teach: z.array(z.object({ site: z.string(), url: z.url() })).optional(),
   tasks: z.array(TaskSchema),
 });
 
 export type Task = z.infer<typeof TaskSchema>;
+export type TaskFile = z.infer<typeof TaskFileSchema>;
+
+export function loadTaskFile(file = "bench/tasks.json"): TaskFile {
+  return TaskFileSchema.parse(JSON.parse(fs.readFileSync(file, "utf8")));
+}
 
 export function loadTasks(file = "bench/tasks.json"): Task[] {
-  const parsed = TaskFileSchema.parse(JSON.parse(fs.readFileSync(file, "utf8")));
+  const parsed = loadTaskFile(file);
   const ids = new Set<string>();
   for (const t of parsed.tasks) {
     if (ids.has(t.id)) throw new Error(`duplicate task id ${t.id}`);

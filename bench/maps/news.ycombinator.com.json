@@ -1,0 +1,82 @@
+{
+  "host": "news.ycombinator.com",
+  "maps": [
+    {
+      "version": 1,
+      "host": "news.ycombinator.com",
+      "pattern": "/item",
+      "pageType": "Hacker News story item page",
+      "fields": [
+        {
+          "name": "title",
+          "type": "string",
+          "optional": false,
+          "example": "My YC app: Dropbox - Throw away your USB drive",
+          "at": {
+            "from": "text",
+            "regex": "^\\s*(.+?)(?: \\([^()\\n]+\\))?\\s*\\n\\s*\\d+ points? by "
+          }
+        },
+        {
+          "name": "site_domain",
+          "type": "string",
+          "optional": true,
+          "example": "getdropbox.com",
+          "at": {
+            "from": "text",
+            "regex": "\\(([^()\\s]+)\\)\\s*\\n\\s*\\d+ points? by "
+          }
+        },
+        {
+          "name": "points",
+          "type": "integer",
+          "optional": false,
+          "example": "104",
+          "at": {
+            "from": "text",
+            "regex": "^\\s*(\\d+) points? by "
+          }
+        },
+        {
+          "name": "author",
+          "type": "string",
+          "optional": false,
+          "example": "dhouston",
+          "at": {
+            "from": "text",
+            "regex": "^\\s*\\d+ points? by (\\S+) on "
+          }
+        },
+        {
+          "name": "submitted_date",
+          "type": "date",
+          "optional": false,
+          "example": "April 4, 2007",
+          "at": {
+            "from": "text",
+            "regex": "^\\s*\\d+ points? by \\S+ on ([A-Z][a-z]+ \\d{1,2}, \\d{4})"
+          }
+        },
+        {
+          "name": "comment_count",
+          "type": "integer",
+          "optional": true,
+          "example": "71",
+          "at": {
+            "from": "text",
+            "regex": "^\\s*\\d+ points? by .*\\|\\s*(\\d+)\\s+comments?\\s*$"
+          }
+        }
+      ],
+      "exampleUrl": "https://news.ycombinator.com/item?id=8863",
+      "createdAt": "2026-11-11T11:22:33.285Z",
+      "source": "teacher",
+      "teacher": {
+        "model": "claude-opus-5-5",
+        "costUsd": 0.05466940000000001,
+        "tokens": 5679,
+        "seconds": 13.4
+      }
+    }
+  ]
+}

@@ -41,6 +41,7 @@ export interface RunMeta {
   toolVersion: string;
   model?: string;
   effort?: string;
+  toolSearch?: boolean;
 }
 
 const median = (xs: number[]): number => {
@@ -82,7 +83,15 @@ function summarize(tool: string, rs: RunRecord[]): Summary {
   };
 }
 
-export function renderReport(records: RunRecord[], metas: RunMeta[]): string {
+/** A grader label for a failed run (bench/src/grade.ts). */
+export interface GradeLabel {
+  tool: string;
+  taskId: string;
+  rep: number;
+  label: string;
+}
+
+export function renderReport(records: RunRecord[], metas: RunMeta[], grades: GradeLabel[] = []): string {
   // Tools in the order the run declared them (the first is the baseline), not
   // the order concurrent runs happened to finish in.
   const tools = [...new Set([...metas.map((m) => m.tool), ...records.map((r) => r.tool)])].filter((t) =>
@@ -94,7 +103,8 @@ export function renderReport(records: RunRecord[], metas: RunMeta[]): string {
   const lines: string[] = [];
 
   lines.push("## Benchmark results", "");
-  for (const m of metas) lines.push(`- \`${m.runId}\`: ${m.tool} ${m.toolVersion}, model ${m.model ?? "?"}, effort ${m.effort ?? "?"}`);
+  for (const m of metas)
+    lines.push(`- \`${m.runId}\`: ${m.tool} ${m.toolVersion}, model ${m.model ?? "?"}, effort ${m.effort ?? "?"}${m.toolSearch ? ", tool search on" : ""}`);
   lines.push("");
   lines.push("| Tool | Runs | Success | Median tokens/task | Mean tokens/task | Median s/task | Mean tool calls | Median cost/task | Est. API cost | Tokens vs baseline | Cost vs baseline |");
   lines.push("|---|---|---|---|---|---|---|---|---|---|---|");
@@ -129,11 +139,12 @@ export function renderReport(records: RunRecord[], metas: RunMeta[]): string {
   const failures = records.filter((r) => !r.correct);
   if (failures.length) {
     lines.push("### Failed runs", "");
-    lines.push("| Tool | Task | Rep | Status | Answer / error |");
-    lines.push("|---|---|---|---|---|");
+    lines.push(`| Tool | Task | Rep | Status | Answer / error |${grades.length ? " Grader |" : ""}`);
+    lines.push(`|---|---|---|---|---|${grades.length ? "---|" : ""}`);
     for (const r of failures) {
       const detail = (r.error ?? r.answer ?? "(no ANSWER line)").replace(/\|/g, "\\|").replace(/\s+/g, " ").slice(0, 140);
-      lines.push(`| ${r.tool} | ${r.taskId} | ${r.rep} | ${r.status} | ${detail} |`);
+      const g = grades.find((x) => x.tool === r.tool && x.taskId === r.taskId && x.rep === r.rep);
+      lines.push(`| ${r.tool} | ${r.taskId} | ${r.rep} | ${r.status} | ${detail} |${grades.length ? ` ${g?.label ?? ""} |` : ""}`);
     }
     lines.push("");
   }
@@ -141,17 +152,21 @@ export function renderReport(records: RunRecord[], metas: RunMeta[]): string {
 }
 
 /** meta.json is one tool (older runs) or several under `tools`. */
-type MetaFile = RunMeta | { runId: string; model?: string; effort?: string; tools: { tool: string; toolVersion: string }[] };
+type MetaFile = RunMeta | { runId: string; model?: string; effort?: string; toolSearch?: boolean; tools: { tool: string; toolVersion: string }[] };
 
-function readRunDir(dir: string): { records: RunRecord[]; metas: RunMeta[] } {
+function readRunDir(dir: string): { records: RunRecord[]; metas: RunMeta[]; grades: GradeLabel[] } {
   const records = fs
     .readFileSync(path.join(dir, "runs.jsonl"), "utf8")
     .split("\n")
     .filter((l) => l.trim())
     .map((l) => JSON.parse(l) as RunRecord);
   const m = JSON.parse(fs.readFileSync(path.join(dir, "meta.json"), "utf8")) as MetaFile;
-  const metas = "tools" in m ? m.tools.map((t) => ({ runId: m.runId, model: m.model, effort: m.effort, ...t })) : [m];
-  return { records, metas };
+  const metas = "tools" in m ? m.tools.map((t) => ({ runId: m.runId, model: m.model, effort: m.effort, toolSearch: m.toolSearch, ...t })) : [m];
+  const gradesFile = path.join(dir, "grades.jsonl");
+  const grades = fs.existsSync(gradesFile)
+    ? fs.readFileSync(gradesFile, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l) as GradeLabel)
+    : [];
+  return { records, metas, grades };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -161,5 +176,5 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     process.exit(1);
   }
   const loaded = dirs.map(readRunDir);
-  console.log(renderReport(loaded.flatMap((l) => l.records), loaded.flatMap((l) => l.metas)));
+  console.log(renderReport(loaded.flatMap((l) => l.records), loaded.flatMap((l) => l.metas), loaded.flatMap((l) => l.grades)));
 }

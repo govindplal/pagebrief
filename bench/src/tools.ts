@@ -3,6 +3,7 @@
 // only variable between runs is the tool itself. All tools drive the same
 // installed Google Chrome, headless.
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -34,15 +35,43 @@ const agentBrowserCli = (): string => path.resolve("node_modules/agent-browser/b
 /** agent-browser session names allow letters, digits, hyphens and underscores. */
 const agentBrowserSession = (workDir: string): string => `bench_${path.basename(workDir).replace(/[^A-Za-z0-9_-]/g, "_")}`;
 
+/** Page maps written by `npm run bench:teach`, used by pagebrief-mapped. */
+export const BENCH_MAPS = "bench/maps";
+
+const ourVersion = (): string => (JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8")) as { version: string }).version;
+const ourServer = (): McpServer => ({
+  command: process.execPath,
+  args: ["--import", pathToFileURL(path.resolve("node_modules/tsx/dist/loader.mjs")).href, path.resolve("src/cli.ts"), "mcp"],
+});
+
+/** Short hash of the committed maps, so a resumed run refuses maps that changed. */
+function mapsHash(): string {
+  const h = createHash("sha256");
+  const dir = path.resolve(BENCH_MAPS);
+  for (const f of fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith(".json")).sort() : []) {
+    h.update(f);
+    h.update(fs.readFileSync(path.join(dir, f)));
+  }
+  return h.digest("hex").slice(0, 8);
+}
+
 export const TOOLS: Record<string, ToolUnderTest> = {
-  "pagebrief": {
+  pagebrief: {
     id: "pagebrief",
-    description: "This project: raw CDP on headless installed Chrome, 3 read-only tools (open, find, read)",
-    version: () => (JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8")) as { version: string }).version,
-    server: () => ({
-      command: process.execPath,
-      args: ["--import", pathToFileURL(path.resolve("node_modules/tsx/dist/loader.mjs")).href, path.resolve("src/cli.ts"), "mcp"],
-    }),
+    description: "This project: raw CDP on headless installed Chrome, 3 read-only tools (open, find, read); page maps off (a first visit)",
+    version: ourVersion,
+    server: () => ({ ...ourServer(), env: { PAGEBRIEF_MAPS: "off" } }),
+  },
+  "pagebrief-mapped": {
+    id: "pagebrief-mapped",
+    description: `This project with the page maps in ${BENCH_MAPS} (a repeat visit): open() leads with checked fields`,
+    version: () => `${ourVersion()}+maps.${mapsHash()}`,
+    server: (workDir) => {
+      // Each run reads its own copy, so nothing a run does can change the committed maps.
+      const dir = path.join(workDir, "maps");
+      fs.cpSync(path.resolve(BENCH_MAPS), dir, { recursive: true });
+      return { ...ourServer(), env: { PAGEBRIEF_MAPS_DIR: dir } };
+    },
   },
   "plain-fetch": {
     id: "plain-fetch",

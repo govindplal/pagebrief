@@ -128,7 +128,13 @@ export const extractScript = (opts: ExtractOptions = {}): string => String.raw`(
       forms,
       jsonLd,
       meta: metaTags,
-      signals: { challenge, hasPassword, hiddenChars, hiddenElements: hidden.length },
+      signals: {
+        challenge,
+        hasPassword,
+        hiddenChars,
+        hiddenElements: hidden.length,
+        hiddenSamples: hidden.slice(0, 5).map((el) => clean(el.textContent, 80)),
+      },
     };
   } finally {
     for (const r of restore) r();

@@ -43,6 +43,8 @@ export interface PageSignals {
   /** Rendered but invisible text that was dropped (zero opacity, zero font size, off screen). */
   hiddenChars: number;
   hiddenElements: number;
+  /** The start of the first few dropped elements' text, for measuring what the drop removes. */
+  hiddenSamples?: string[];
 }
 
 /** A JSON response the page loaded itself (XHR/fetch, or a JSON document). */
@@ -173,9 +175,9 @@ function linesOf(p: PageData): PageLines {
 }
 
 const BOT_TITLE =
-  /just a moment|attention required|access denied|are you a (robot|human)|verify(ing)? (that )?you are (a )?human|security check|human verification|pardon our interruption|request unsuccessful|bot (check|verification)|ddos-guard|captcha/i;
+  /just a moment|attention required|access denied|are you a (robot|human)|verify(ing)? (that )?you are (a )?human|security check|human verification|pardon our interruption|request unsuccessful|bot (check|verification)|ddos-guard|captcha|client challenge/i;
 const BOT_TEXT =
-  /verify(ing)? (that )?you are (a )?human|checking (if the site connection is secure|your browser)|press (&|and) hold|enable javascript and cookies to continue|unusual traffic from your (computer|network)|are you a robot|complete the security check|why have i been blocked|needs to review the security of your connection|verify you are not a (robot|bot)/i;
+  /verify(ing)? (that )?you are (a )?human|checking (if the site connection is secure|your browser)|press (&|and) hold|enable javascript and cookies to continue|unusual traffic from your (computer|network)|are you a robot|complete the security check|why have i been blocked|needs to review the security of your connection|verify you are not a (robot|bot)|\bcaptcha\b|enter the characters (you see|seen)/i;
 const LOGIN_URL = /(log|sign)[-_]?in|\/auth\b|\/sso\b|\/account\/?$/i;
 
 export interface Block {

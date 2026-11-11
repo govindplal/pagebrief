@@ -1,0 +1,132 @@
+{
+  "host": "hex.pm",
+  "maps": [
+    {
+      "version": 1,
+      "host": "hex.pm",
+      "pattern": "/packages/*/*",
+      "pageType": "Hex package version page",
+      "fields": [
+        {
+          "name": "package_name",
+          "type": "string",
+          "optional": false,
+          "example": "plug",
+          "at": {
+            "from": "meta",
+            "name": "og:title"
+          }
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "optional": false,
+          "example": "Compose web applications with functions",
+          "at": {
+            "from": "meta",
+            "name": "description"
+          }
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "optional": false,
+          "example": "1.14.0",
+          "at": {
+            "from": "text",
+            "regex": "^Packages\\n[^\\n]+\\n([^\\n]+)$"
+          }
+        },
+        {
+          "name": "downloads_this_version",
+          "type": "integer",
+          "optional": false,
+          "example": "5",
+          "at": {
+            "from": "text",
+            "regex": "^THIS VERSION\\n\\n([\\d ]+)$"
+          }
+        },
+        {
+          "name": "downloads_yesterday",
+          "type": "integer",
+          "optional": false,
+          "example": "129",
+          "at": {
+            "from": "text",
+            "regex": "^YESTERDAY\\n\\n([\\d ]+)$"
+          }
+        },
+        {
+          "name": "downloads_last_7_days",
+          "type": "integer",
+          "optional": false,
+          "example": "743",
+          "at": {
+            "from": "text",
+            "regex": "^LAST 7 DAYS\\n\\n([\\d ]+)$"
+          }
+        },
+        {
+          "name": "downloads_all_time",
+          "type": "integer",
+          "optional": false,
+          "example": "169",
+          "at": {
+            "from": "text",
+            "regex": "^ALL TIME\\n\\n([\\d ]+)$"
+          }
+        },
+        {
+          "name": "last_updated",
+          "type": "date",
+          "optional": false,
+          "example": "Oct 31, 2022",
+          "at": {
+            "from": "text",
+            "regex": "^LAST UPDATED\\n\\n([^\\n]+)$"
+          }
+        },
+        {
+          "name": "license",
+          "type": "string",
+          "optional": true,
+          "example": "Apache-2.0",
+          "at": {
+            "from": "text",
+            "regex": "^LICENSE\\n\\n([^\\n]+)$"
+          }
+        },
+        {
+          "name": "build_tools",
+          "type": "string",
+          "optional": false,
+          "example": "mix",
+          "at": {
+            "from": "text",
+            "regex": "^BUILD TOOLS\\n\\n([^\\n]+)$"
+          }
+        },
+        {
+          "name": "publisher",
+          "type": "string",
+          "optional": true,
+          "example": "josevalim",
+          "at": {
+            "from": "text",
+            "regex": "^PUBLISHER\\n\\n([^\\n]+)$"
+          }
+        }
+      ],
+      "exampleUrl": "https://hex.pm/packages/plug/1.14.0",
+      "createdAt": "2026-11-11T11:21:52.226Z",
+      "source": "teacher",
+      "teacher": {
+        "model": "claude-opus-5-5",
+        "costUsd": 0.038653400000000004,
+        "tokens": 3491,
+        "seconds": 12.3
+      }
+    }
+  ]
+}

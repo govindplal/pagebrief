@@ -1,0 +1,698 @@
+{
+  "version": 1,
+  "verified": "2026-11-11",
+  "notes": "Repeat-visit track: ten pages of one type per site, all of the same type as the site's teach page (which the teacher maps and the agent never sees). Answers were read by bench/scripts/make-repeat-tasks.ts from each site's HTML or public API on the date above. Hacker News points and comment counts on old stories are frozen in practice, but can still change if a comment is deleted.",
+  "teach": [
+    {
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"
+    },
+    {
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Albert-Einstein/"
+    },
+    {
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/plug/1.14.0"
+    },
+    {
+      "site": "crates.io",
+      "url": "https://crates.io/crates/serde/1.0.190"
+    },
+    {
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1706.03762v1"
+    },
+    {
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=8863"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "rv-bts-1",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/in-her-wake_980/index.html",
+      "kind": "repeat",
+      "question": "What is the price of this book, including tax, in GBP?",
+      "check": {
+        "type": "number",
+        "value": 12.84
+      }
+    },
+    {
+      "id": "rv-bts-2",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/how-music-works_979/index.html",
+      "kind": "repeat",
+      "question": "How many copies of this book are in stock?",
+      "check": {
+        "type": "number",
+        "value": 19
+      }
+    },
+    {
+      "id": "rv-bts-3",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/foolproof-preserving-a-guide-to-small-batch-jams-jellies-pickles-condiments-and-more-a-foolproof-guide-to-making-small-batch-jams-jellies-pickles-condiments-and-more_978/index.html",
+      "kind": "repeat",
+      "question": "What is this book's UPC?",
+      "check": {
+        "type": "includes",
+        "value": "5674a18a29a43ced"
+      }
+    },
+    {
+      "id": "rv-bts-4",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/chase-me-paris-nights-2_977/index.html",
+      "kind": "repeat",
+      "question": "What is the price of this book, including tax, in GBP?",
+      "check": {
+        "type": "number",
+        "value": 25.27
+      }
+    },
+    {
+      "id": "rv-bts-5",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/black-dust_976/index.html",
+      "kind": "repeat",
+      "question": "How many copies of this book are in stock?",
+      "check": {
+        "type": "number",
+        "value": 19
+      }
+    },
+    {
+      "id": "rv-bts-6",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/birdsong-a-story-in-pictures_975/index.html",
+      "kind": "repeat",
+      "question": "What is this book's UPC?",
+      "check": {
+        "type": "includes",
+        "value": "9528d0948525bf5f"
+      }
+    },
+    {
+      "id": "rv-bts-7",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/americas-cradle-of-quarterbacks-western-pennsylvanias-football-factory-from-johnny-unitas-to-joe-montana_974/index.html",
+      "kind": "repeat",
+      "question": "What is the price of this book, including tax, in GBP?",
+      "check": {
+        "type": "number",
+        "value": 22.5
+      }
+    },
+    {
+      "id": "rv-bts-8",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/aladdin-and-his-wonderful-lamp_973/index.html",
+      "kind": "repeat",
+      "question": "How many copies of this book are in stock?",
+      "check": {
+        "type": "number",
+        "value": 19
+      }
+    },
+    {
+      "id": "rv-bts-9",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/worlds-elsewhere-journeys-around-shakespeares-globe_972/index.html",
+      "kind": "repeat",
+      "question": "What is this book's UPC?",
+      "check": {
+        "type": "includes",
+        "value": "4c28def39d850cdf"
+      }
+    },
+    {
+      "id": "rv-bts-10",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/wall-and-piece_971/index.html",
+      "kind": "repeat",
+      "question": "What is the price of this book, including tax, in GBP?",
+      "check": {
+        "type": "number",
+        "value": 44.18
+      }
+    },
+    {
+      "id": "rv-qts-1",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/J-K-Rowling",
+      "kind": "repeat",
+      "question": "On what date was this author born?",
+      "check": {
+        "type": "date",
+        "value": "1965-07-31",
+        "toleranceDays": 0
+      }
+    },
+    {
+      "id": "rv-qts-2",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Jane-Austen",
+      "kind": "repeat",
+      "question": "Where was this author born?",
+      "check": {
+        "type": "includes",
+        "value": "Steventon Rectory"
+      }
+    },
+    {
+      "id": "rv-qts-3",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Marilyn-Monroe",
+      "kind": "repeat",
+      "question": "On what date was this author born?",
+      "check": {
+        "type": "date",
+        "value": "1926-06-01",
+        "toleranceDays": 0
+      }
+    },
+    {
+      "id": "rv-qts-4",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Andre-Gide",
+      "kind": "repeat",
+      "question": "Where was this author born?",
+      "check": {
+        "type": "includes",
+        "value": "Paris"
+      }
+    },
+    {
+      "id": "rv-qts-5",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Thomas-A-Edison",
+      "kind": "repeat",
+      "question": "On what date was this author born?",
+      "check": {
+        "type": "date",
+        "value": "1847-02-11",
+        "toleranceDays": 0
+      }
+    },
+    {
+      "id": "rv-qts-6",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Eleanor-Roosevelt",
+      "kind": "repeat",
+      "question": "Where was this author born?",
+      "check": {
+        "type": "includes",
+        "value": "The United States"
+      }
+    },
+    {
+      "id": "rv-qts-7",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Steve-Martin",
+      "kind": "repeat",
+      "question": "On what date was this author born?",
+      "check": {
+        "type": "date",
+        "value": "1945-08-14",
+        "toleranceDays": 0
+      }
+    },
+    {
+      "id": "rv-qts-8",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Bob-Marley",
+      "kind": "repeat",
+      "question": "Where was this author born?",
+      "check": {
+        "type": "includes",
+        "value": "Nine Mile"
+      }
+    },
+    {
+      "id": "rv-qts-9",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Dr-Seuss",
+      "kind": "repeat",
+      "question": "On what date was this author born?",
+      "check": {
+        "type": "date",
+        "value": "1904-03-02",
+        "toleranceDays": 0
+      }
+    },
+    {
+      "id": "rv-qts-10",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Douglas-Adams",
+      "kind": "repeat",
+      "question": "Where was this author born?",
+      "check": {
+        "type": "includes",
+        "value": "Cambridge"
+      }
+    },
+    {
+      "id": "rv-hex-1",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/phoenix_html/3.3.0",
+      "kind": "repeat",
+      "question": "On what date was this version published?",
+      "check": {
+        "type": "date",
+        "value": "2023-02-10"
+      }
+    },
+    {
+      "id": "rv-hex-2",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/ecto_sql/3.10.0",
+      "kind": "repeat",
+      "question": "Which user published this version?",
+      "check": {
+        "type": "includes",
+        "value": "josevalim"
+      }
+    },
+    {
+      "id": "rv-hex-3",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/telemetry/1.2.1",
+      "kind": "repeat",
+      "question": "What license is this package under?",
+      "check": {
+        "type": "includes",
+        "value": "Apache-2.0"
+      }
+    },
+    {
+      "id": "rv-hex-4",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/decimal/2.1.1",
+      "kind": "repeat",
+      "question": "On what date was this version published?",
+      "check": {
+        "type": "date",
+        "value": "2023-04-26"
+      }
+    },
+    {
+      "id": "rv-hex-5",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/mime/2.0.3",
+      "kind": "repeat",
+      "question": "Which user published this version?",
+      "check": {
+        "type": "includes",
+        "value": "josevalim"
+      }
+    },
+    {
+      "id": "rv-hex-6",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/plug_cowboy/2.6.1",
+      "kind": "repeat",
+      "question": "What license is this package under?",
+      "check": {
+        "type": "includes",
+        "value": "Apache-2.0"
+      }
+    },
+    {
+      "id": "rv-hex-7",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/postgrex/0.17.1",
+      "kind": "repeat",
+      "question": "On what date was this version published?",
+      "check": {
+        "type": "date",
+        "value": "2023-04-13"
+      }
+    },
+    {
+      "id": "rv-hex-8",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/castore/1.0.3",
+      "kind": "repeat",
+      "question": "Which user published this version?",
+      "check": {
+        "type": "includes",
+        "value": "ericmj"
+      }
+    },
+    {
+      "id": "rv-hex-9",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/tesla/1.7.0",
+      "kind": "repeat",
+      "question": "What license is this package under?",
+      "check": {
+        "type": "includes",
+        "value": "MIT"
+      }
+    },
+    {
+      "id": "rv-hex-10",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/absinthe/1.7.1",
+      "kind": "repeat",
+      "question": "On what date was this version published?",
+      "check": {
+        "type": "date",
+        "value": "2023-02-01"
+      }
+    },
+    {
+      "id": "rv-crates-1",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/tokio/1.32.0",
+      "kind": "repeat",
+      "question": "What license is this crate version published under?",
+      "check": {
+        "type": "includes",
+        "value": "MIT"
+      }
+    },
+    {
+      "id": "rv-crates-2",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/rand/0.8.5",
+      "kind": "repeat",
+      "question": "On what date was this crate version published?",
+      "check": {
+        "type": "date",
+        "value": "2022-02-14"
+      }
+    },
+    {
+      "id": "rv-crates-3",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/regex/1.9.6",
+      "kind": "repeat",
+      "question": "On what date was this crate version published?",
+      "check": {
+        "type": "date",
+        "value": "2023-09-30"
+      }
+    },
+    {
+      "id": "rv-crates-4",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/anyhow/1.0.75",
+      "kind": "repeat",
+      "question": "What license is this crate version published under?",
+      "check": {
+        "type": "includes",
+        "value": "MIT OR Apache-2.0"
+      }
+    },
+    {
+      "id": "rv-crates-5",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/clap/4.4.6",
+      "kind": "repeat",
+      "question": "What minimum Rust version (MSRV) does this crate version declare?",
+      "check": {
+        "type": "includes",
+        "value": "1.70.0"
+      }
+    },
+    {
+      "id": "rv-crates-6",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/syn/2.0.38",
+      "kind": "repeat",
+      "question": "On what date was this crate version published?",
+      "check": {
+        "type": "date",
+        "value": "2023-10-05"
+      }
+    },
+    {
+      "id": "rv-crates-7",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/log/0.4.20",
+      "kind": "repeat",
+      "question": "What license is this crate version published under?",
+      "check": {
+        "type": "includes",
+        "value": "MIT OR Apache-2.0"
+      }
+    },
+    {
+      "id": "rv-crates-8",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/itoa/1.0.9",
+      "kind": "repeat",
+      "question": "What minimum Rust version (MSRV) does this crate version declare?",
+      "check": {
+        "type": "includes",
+        "value": "1.36"
+      }
+    },
+    {
+      "id": "rv-crates-9",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/bytes/1.5.0",
+      "kind": "repeat",
+      "question": "On what date was this crate version published?",
+      "check": {
+        "type": "date",
+        "value": "2023-09-07"
+      }
+    },
+    {
+      "id": "rv-crates-10",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/thiserror/1.0.49",
+      "kind": "repeat",
+      "question": "What license is this crate version published under?",
+      "check": {
+        "type": "includes",
+        "value": "MIT OR Apache-2.0"
+      }
+    },
+    {
+      "id": "rv-arxiv-1",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1810.04805v1",
+      "kind": "repeat",
+      "question": "On what date was this version of the paper submitted?",
+      "check": {
+        "type": "date",
+        "value": "2018-10-11"
+      }
+    },
+    {
+      "id": "rv-arxiv-2",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/2005.14165v1",
+      "kind": "repeat",
+      "question": "Who is the first author of this paper?",
+      "check": {
+        "type": "includes",
+        "value": "Brown"
+      }
+    },
+    {
+      "id": "rv-arxiv-3",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1512.03385v1",
+      "kind": "repeat",
+      "question": "What is this paper's primary arXiv subject category (e.g. cs.LG)?",
+      "check": {
+        "type": "includes",
+        "value": "cs.CV"
+      }
+    },
+    {
+      "id": "rv-arxiv-4",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1409.0473v1",
+      "kind": "repeat",
+      "question": "On what date was this version of the paper submitted?",
+      "check": {
+        "type": "date",
+        "value": "2014-09-01"
+      }
+    },
+    {
+      "id": "rv-arxiv-5",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1412.6980v1",
+      "kind": "repeat",
+      "question": "Who is the first author of this paper?",
+      "check": {
+        "type": "includes",
+        "value": "Kingma"
+      }
+    },
+    {
+      "id": "rv-arxiv-6",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/2010.11929v1",
+      "kind": "repeat",
+      "question": "What is this paper's primary arXiv subject category (e.g. cs.LG)?",
+      "check": {
+        "type": "includes",
+        "value": "cs.CV"
+      }
+    },
+    {
+      "id": "rv-arxiv-7",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1312.6114v1",
+      "kind": "repeat",
+      "question": "On what date was this version of the paper submitted?",
+      "check": {
+        "type": "date",
+        "value": "2013-12-20"
+      }
+    },
+    {
+      "id": "rv-arxiv-8",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1406.2661v1",
+      "kind": "repeat",
+      "question": "Who is the first author of this paper?",
+      "check": {
+        "type": "includes",
+        "value": "Goodfellow"
+      }
+    },
+    {
+      "id": "rv-arxiv-9",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/2112.10752v1",
+      "kind": "repeat",
+      "question": "What is this paper's primary arXiv subject category (e.g. cs.LG)?",
+      "check": {
+        "type": "includes",
+        "value": "cs.CV"
+      }
+    },
+    {
+      "id": "rv-arxiv-10",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1910.10683v1",
+      "kind": "repeat",
+      "question": "On what date was this version of the paper submitted?",
+      "check": {
+        "type": "date",
+        "value": "2019-10-23"
+      }
+    },
+    {
+      "id": "rv-hn-1",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=1",
+      "kind": "repeat",
+      "question": "How many points does this story have?",
+      "check": {
+        "type": "number",
+        "value": 57
+      }
+    },
+    {
+      "id": "rv-hn-2",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=121003",
+      "kind": "repeat",
+      "question": "Which user submitted this story?",
+      "check": {
+        "type": "includes",
+        "value": "tel"
+      }
+    },
+    {
+      "id": "rv-hn-3",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=3078128",
+      "kind": "repeat",
+      "question": "How many comments does this story have?",
+      "check": {
+        "type": "number",
+        "value": 363
+      }
+    },
+    {
+      "id": "rv-hn-4",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=363",
+      "kind": "repeat",
+      "question": "How many points does this story have?",
+      "check": {
+        "type": "number",
+        "value": 262
+      }
+    },
+    {
+      "id": "rv-hn-5",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=20",
+      "kind": "repeat",
+      "question": "Which user submitted this story?",
+      "check": {
+        "type": "includes",
+        "value": "pg"
+      }
+    },
+    {
+      "id": "rv-hn-6",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=25",
+      "kind": "repeat",
+      "question": "How many points does this story have?",
+      "check": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "rv-hn-7",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=101",
+      "kind": "repeat",
+      "question": "How many points does this story have?",
+      "check": {
+        "type": "number",
+        "value": 4
+      }
+    },
+    {
+      "id": "rv-hn-8",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=13",
+      "kind": "repeat",
+      "question": "Which user submitted this story?",
+      "check": {
+        "type": "includes",
+        "value": "phyllis"
+      }
+    },
+    {
+      "id": "rv-hn-9",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=2",
+      "kind": "repeat",
+      "question": "How many points does this story have?",
+      "check": {
+        "type": "number",
+        "value": 16
+      }
+    },
+    {
+      "id": "rv-hn-10",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=3",
+      "kind": "repeat",
+      "question": "How many points does this story have?",
+      "check": {
+        "type": "number",
+        "value": 7
+      }
+    }
+  ]
+}

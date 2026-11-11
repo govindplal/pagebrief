@@ -21,6 +21,11 @@ export interface RunSpec {
   transcriptPath: string;
   /** Extra environment for the claude process (inherited by the MCP server). */
   env?: Record<string, string>;
+  /**
+   * Load tool definitions on demand: the agent gets a ToolSearch tool and the
+   * browser tools' definitions stay out of the prompt until it asks for them.
+   */
+  toolSearch?: boolean;
 }
 
 export interface RunOutcome {
@@ -86,12 +91,12 @@ export function claudeArgs(spec: RunSpec): string[] {
     "--system-prompt",
     spec.systemPrompt,
     "--tools",
-    "",
+    spec.toolSearch ? "ToolSearch" : "",
     "--mcp-config",
     spec.mcpConfigPath,
     "--strict-mcp-config",
     "--allowedTools",
-    `mcp__${MCP_SERVER_NAME}`,
+    spec.toolSearch ? `mcp__${MCP_SERVER_NAME} ToolSearch` : `mcp__${MCP_SERVER_NAME}`,
     "--permission-mode",
     "dontAsk",
     "--setting-sources",
@@ -137,9 +142,9 @@ export async function runClaude(spec: RunSpec): Promise<RunOutcome> {
   const child = spawn("claude", claudeArgs(spec), {
     cwd: spec.cwd,
     stdio: ["ignore", "pipe", "pipe"],
-    // Tool search would defer large tool sets behind a ToolSearch tool we don't
-    // provide; keep every tool's definitions loaded so all tools are measured alike.
-    env: { ...process.env, ENABLE_TOOL_SEARCH: "false", ...spec.env },
+    // By default every tool's definitions stay loaded so all tools are measured
+    // alike; with toolSearch they load on demand through the ToolSearch tool.
+    env: { ...process.env, ENABLE_TOOL_SEARCH: spec.toolSearch ? "true" : "false", ...spec.env },
     detached: process.platform !== "win32",
   });
 

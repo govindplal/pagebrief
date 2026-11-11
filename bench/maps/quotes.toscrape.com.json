@@ -1,0 +1,52 @@
+{
+  "host": "quotes.toscrape.com",
+  "maps": [
+    {
+      "version": 1,
+      "host": "quotes.toscrape.com",
+      "pattern": "/author/*",
+      "pageType": "author page",
+      "fields": [
+        {
+          "name": "author_name",
+          "type": "string",
+          "optional": false,
+          "example": "Albert Einstein",
+          "at": {
+            "from": "text",
+            "regex": "^(.+)\\n\\nBorn: "
+          }
+        },
+        {
+          "name": "birth_date",
+          "type": "date",
+          "optional": false,
+          "example": "March 14, 1879",
+          "at": {
+            "from": "text",
+            "regex": "^Born: (.+?) in "
+          }
+        },
+        {
+          "name": "birth_place",
+          "type": "string",
+          "optional": false,
+          "example": "Ulm, Germany",
+          "at": {
+            "from": "text",
+            "regex": "^Born: .+? in (.+)$"
+          }
+        }
+      ],
+      "exampleUrl": "https://quotes.toscrape.com/author/Albert-Einstein/",
+      "createdAt": "2026-11-11T11:21:32.121Z",
+      "source": "teacher",
+      "teacher": {
+        "model": "claude-opus-5-5",
+        "costUsd": 0.029141399999999998,
+        "tokens": 3397,
+        "seconds": 7.9
+      }
+    }
+  ]
+}

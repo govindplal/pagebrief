@@ -44,6 +44,8 @@ const { values: opts } = parseArgs({
     "stop-at-weekly": { type: "string", default: "0.9" },
     resume: { type: "string" },
     out: { type: "string", default: "results" },
+    "tool-search": { type: "boolean", default: false },
+    "tasks-file": { type: "string", default: "bench/tasks.json" },
   },
 });
 
@@ -61,6 +63,9 @@ interface Meta {
   systemPrompt: string;
   timeoutSeconds: number;
   maxBudgetUsd: number;
+  /** Tool definitions loaded on demand through ToolSearch (older runs: absent, meaning off). */
+  toolSearch?: boolean;
+  tasksFile?: string;
 }
 
 function selectTasks(all: Task[]): Task[] {
@@ -93,20 +98,21 @@ const readRecords = (file: string): RunRecord[] =>
     : [];
 
 const reportMetas = (m: Meta): RunMeta[] =>
-  m.tools.map((t) => ({ runId: m.runId, tool: t.tool, toolVersion: t.toolVersion, model: m.model, effort: m.effort }));
+  m.tools.map((t) => ({ runId: m.runId, tool: t.tool, toolVersion: t.toolVersion, model: m.model, effort: m.effort, toolSearch: m.toolSearch }));
 
 const pctOf = (x: number | null): string => (x === null ? "?" : `${Math.round(x * 100)}%`);
 
 function newMeta(): Meta {
   const tools = opts.tool!.split(",").map((s) => getTool(s.trim()));
-  const runId = `${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}-${tools.map((t) => t.id).join("+")}`;
+  const suffix = `${opts["tool-search"] ? "-toolsearch" : ""}${opts["tasks-file"] !== "bench/tasks.json" ? `-${path.basename(opts["tasks-file"]!, ".json")}` : ""}`;
+  const runId = `${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}-${tools.map((t) => t.id).join("+")}${suffix}`;
   return {
     runId,
     tools: tools.map((t) => ({ tool: t.id, toolVersion: t.version(), toolDescription: t.description })),
     model: opts.model!,
     effort: opts.effort!,
     repeats: Number(opts.repeats ?? 3),
-    taskIds: selectTasks(loadTasks()).map((t) => t.id),
+    taskIds: selectTasks(loadTasks(opts["tasks-file"])).map((t) => t.id),
     claudeVersion: execFileSync("claude", ["--version"], { encoding: "utf8" }).trim(),
     gitSha: gitSha(),
     platform: `${process.platform} ${os.release()}`,
@@ -114,6 +120,8 @@ function newMeta(): Meta {
     systemPrompt: SYSTEM_PROMPT,
     timeoutSeconds: Number(opts.timeout),
     maxBudgetUsd: Number(opts["max-budget"]),
+    toolSearch: opts["tool-search"],
+    tasksFile: opts["tasks-file"],
   };
 }
 
@@ -139,7 +147,7 @@ async function main(): Promise<void> {
   const runsFile = path.join(outDir, "runs.jsonl");
   const records = readRecords(runsFile);
   const done = new Set(records.map((r) => jobKey(r.tool, r.taskId, r.rep)));
-  const allTasks = loadTasks();
+  const allTasks = loadTasks(meta.tasksFile);
   const tasks = meta.taskIds.map((id) => {
     const t = allTasks.find((x) => x.id === id);
     if (!t) throw new Error(`task ${id} from meta.json no longer exists`);
@@ -164,7 +172,7 @@ async function main(): Promise<void> {
   const concurrency = Math.max(1, Number(opts.concurrency));
   console.log(
     `${meta.runId}: ${jobs.length} runs to go (${records.length} already done), ${meta.tools.map((t) => t.tool).join(" + ")}, ` +
-      `model ${meta.model}, effort ${meta.effort}, stop at ${pctOf(stopAt)} of the 5-hour limit`,
+      `model ${meta.model}, effort ${meta.effort}${meta.toolSearch ? ", tool search on" : ""}, stop at ${pctOf(stopAt)} of the 5-hour limit`,
   );
 
   async function worker(): Promise<void> {
@@ -187,6 +195,7 @@ async function main(): Promise<void> {
         timeoutMs: meta.timeoutSeconds * 1000,
         maxBudgetUsd: meta.maxBudgetUsd,
         transcriptPath: path.join(transcripts, `${toolId}-${task.id}-${rep}.jsonl`),
+        toolSearch: meta.toolSearch,
       });
       try {
         tool.cleanup?.(workDir);

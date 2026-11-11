@@ -1,0 +1,123 @@
+{
+  "host": "arxiv.org",
+  "maps": [
+    {
+      "version": 1,
+      "host": "arxiv.org",
+      "pattern": "/abs/**",
+      "pageType": "arXiv paper abstract page",
+      "fields": [
+        {
+          "name": "title",
+          "type": "string",
+          "example": "Attention Is All You Need",
+          "at": {
+            "from": "meta",
+            "name": "citation_title"
+          }
+        },
+        {
+          "name": "arxiv_id",
+          "type": "string",
+          "example": "1706.03762",
+          "at": {
+            "from": "meta",
+            "name": "citation_arxiv_id"
+          }
+        },
+        {
+          "name": "first_author",
+          "type": "string",
+          "example": "Vaswani, Ashish",
+          "at": {
+            "from": "meta",
+            "name": "citation_author"
+          }
+        },
+        {
+          "name": "submission_date",
+          "type": "date",
+          "example": "2017/06/12",
+          "at": {
+            "from": "meta",
+            "name": "citation_date"
+          }
+        },
+        {
+          "name": "pdf_url",
+          "type": "url",
+          "example": "https://arxiv.org/pdf/1706.03762",
+          "at": {
+            "from": "meta",
+            "name": "citation_pdf_url"
+          }
+        },
+        {
+          "name": "subjects",
+          "type": "string",
+          "example": "Computation and Language (cs.CL); Machine Learning (cs.LG)",
+          "at": {
+            "from": "text",
+            "regex": "^Subjects:\\s*(.+)$"
+          }
+        },
+        {
+          "name": "primary_category",
+          "type": "string",
+          "example": "cs.CL",
+          "at": {
+            "from": "text",
+            "regex": "^Cite as:\\s*arXiv:\\S+ \\[([^\\]]+)\\]"
+          }
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "optional": true,
+          "example": "15 pages, 5 figure",
+          "at": {
+            "from": "text",
+            "regex": "^Comments:\\s*(.+)$"
+          }
+        },
+        {
+          "name": "doi",
+          "type": "url",
+          "example": "https://doi.org/10.48550/arXiv.1706.03762",
+          "at": {
+            "from": "text",
+            "regex": "^(https://doi\\.org/\\S+)\\s*$"
+          }
+        },
+        {
+          "name": "submitted_by",
+          "type": "string",
+          "example": "Ashish Vaswani",
+          "at": {
+            "from": "text",
+            "regex": "^From: (.+?) \\[view email\\]"
+          }
+        },
+        {
+          "name": "latest_version",
+          "type": "string",
+          "optional": true,
+          "example": "v7",
+          "at": {
+            "from": "text",
+            "regex": "latest version [^(\\]]+\\((v\\d+)\\)"
+          }
+        }
+      ],
+      "exampleUrl": "https://arxiv.org/abs/1706.03762v1",
+      "createdAt": "2026-11-11T11:22:17.498Z",
+      "source": "teacher",
+      "teacher": {
+        "model": "claude-opus-5-5",
+        "costUsd": 0.0596934,
+        "tokens": 6172,
+        "seconds": 12.7
+      }
+    }
+  ]
+}

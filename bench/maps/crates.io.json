@@ -1,0 +1,144 @@
+{
+  "host": "crates.io",
+  "maps": [
+    {
+      "version": 1,
+      "host": "crates.io",
+      "pattern": "/crates/*/*",
+      "pageType": "crate version page",
+      "fields": [
+        {
+          "name": "crate_name",
+          "type": "string",
+          "optional": false,
+          "example": "serde",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.crate"
+          }
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "optional": false,
+          "example": "1.0.190",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.num"
+          }
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "optional": true,
+          "example": "A generic serialization/deserialization framework",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.description"
+          }
+        },
+        {
+          "name": "license",
+          "type": "string",
+          "optional": true,
+          "example": "MIT OR Apache-2.0",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.license"
+          }
+        },
+        {
+          "name": "published_at",
+          "type": "date",
+          "optional": false,
+          "example": "2023-10-26T03:05:46.070043Z",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.created_at"
+          }
+        },
+        {
+          "name": "version_downloads",
+          "type": "integer",
+          "optional": false,
+          "example": "8604684",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.downloads"
+          }
+        },
+        {
+          "name": "publisher",
+          "type": "string",
+          "optional": true,
+          "example": "David Tolnay",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.published_by.name"
+          }
+        },
+        {
+          "name": "minimum_rust_version",
+          "type": "string",
+          "optional": true,
+          "example": "1.31",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.rust_version"
+          }
+        },
+        {
+          "name": "crate_size",
+          "type": "integer",
+          "unit": "bytes",
+          "optional": false,
+          "example": "76455",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.crate_size"
+          }
+        },
+        {
+          "name": "repository",
+          "type": "url",
+          "optional": true,
+          "example": "https://github.com/serde-rs/serde",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.repository"
+          }
+        },
+        {
+          "name": "yanked",
+          "type": "boolean",
+          "optional": false,
+          "example": "false",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.yanked"
+          }
+        }
+      ],
+      "exampleUrl": "https://crates.io/crates/serde/1.0.190",
+      "createdAt": "2026-11-11T11:22:03.072Z",
+      "source": "teacher",
+      "teacher": {
+        "model": "claude-opus-5-5",
+        "costUsd": 0.0761614,
+        "tokens": 8979,
+        "seconds": 8.2
+      }
+    }
+  ]
+}
