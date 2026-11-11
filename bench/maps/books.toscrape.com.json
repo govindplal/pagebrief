@@ -5,7 +5,7 @@
       "version": 1,
       "host": "books.toscrape.com",
       "pattern": "/catalogue/*/index.html",
-      "pageType": "book product page",
+      "pageType": "book page",
       "fields": [
         {
           "name": "title",
@@ -14,7 +14,7 @@
           "example": "A Light in the Attic",
           "at": {
             "from": "text",
-            "regex": "^([^\\n]+)\\n+£\\d"
+            "regex": "^([^\\n£]+)\\n\\n£\\d"
           }
         },
         {
@@ -24,7 +24,7 @@
           "example": "a897fe39b1053632",
           "at": {
             "from": "text",
-            "regex": "^UPC\\t(\\S+)"
+            "regex": "^UPC\\s+([0-9a-f]+)"
           }
         },
         {
@@ -34,7 +34,7 @@
           "example": "Books",
           "at": {
             "from": "text",
-            "regex": "^Product Type\\t([^\\n]+)"
+            "regex": "^Product Type\\s+([^\\n]+)"
           }
         },
         {
@@ -45,7 +45,7 @@
           "example": "51.77",
           "at": {
             "from": "text",
-            "regex": "^Price \\(excl\\. tax\\)\\t£([\\d.]+)"
+            "regex": "^Price \\(excl\\. tax\\)\\s+£([0-9.,]+)"
           }
         },
         {
@@ -56,7 +56,7 @@
           "example": "51.77",
           "at": {
             "from": "text",
-            "regex": "^Price \\(incl\\. tax\\)\\t£([\\d.]+)"
+            "regex": "^Price \\(incl\\. tax\\)\\s+£([0-9.,]+)"
           }
         },
         {
@@ -67,7 +67,7 @@
           "example": "0.00",
           "at": {
             "from": "text",
-            "regex": "^Tax\\t£([\\d.]+)"
+            "regex": "^Tax\\s+£([0-9.,]+)"
           }
         },
         {
@@ -77,7 +77,7 @@
           "example": "In stock (22 available)",
           "at": {
             "from": "text",
-            "regex": "^Availability\\t([^\\n]+)"
+            "regex": "^Availability\\s+([^\\n]+)"
           }
         },
         {
@@ -87,7 +87,7 @@
           "example": "22",
           "at": {
             "from": "text",
-            "regex": "^Availability\\t[^\\n]*?\\((\\d+) available\\)"
+            "regex": "^Availability\\s+In stock \\((\\d+) available\\)"
           }
         },
         {
@@ -97,7 +97,7 @@
           "example": "0",
           "at": {
             "from": "text",
-            "regex": "^Number of reviews\\t(\\d+)"
+            "regex": "^Number of reviews\\s+(\\d+)"
           }
         },
         {
@@ -113,7 +113,7 @@
         {
           "name": "created",
           "type": "string",
-          "optional": true,
+          "optional": false,
           "example": "24th Jun 2016 09:29",
           "at": {
             "from": "meta",
@@ -122,13 +122,13 @@
         }
       ],
       "exampleUrl": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html",
-      "createdAt": "2026-11-11T11:21:21.455Z",
+      "createdAt": "2026-11-11T15:57:06.586Z",
       "source": "teacher",
       "teacher": {
         "model": "claude-opus-5-5",
-        "costUsd": 0.049532,
-        "tokens": 3737,
-        "seconds": 16
+        "costUsd": 0.045972,
+        "tokens": 3559,
+        "seconds": 13.3
       }
     }
   ]

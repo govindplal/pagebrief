@@ -10,6 +10,7 @@
         {
           "name": "title",
           "type": "string",
+          "optional": false,
           "example": "Attention Is All You Need",
           "at": {
             "from": "meta",
@@ -19,6 +20,7 @@
         {
           "name": "arxiv_id",
           "type": "string",
+          "optional": false,
           "example": "1706.03762",
           "at": {
             "from": "meta",
@@ -28,6 +30,7 @@
         {
           "name": "first_author",
           "type": "string",
+          "optional": false,
           "example": "Vaswani, Ashish",
           "at": {
             "from": "meta",
@@ -35,8 +38,9 @@
           }
         },
         {
-          "name": "submission_date",
+          "name": "submitted_date",
           "type": "date",
+          "optional": false,
           "example": "2017/06/12",
           "at": {
             "from": "meta",
@@ -46,6 +50,7 @@
         {
           "name": "pdf_url",
           "type": "url",
+          "optional": false,
           "example": "https://arxiv.org/pdf/1706.03762",
           "at": {
             "from": "meta",
@@ -53,21 +58,23 @@
           }
         },
         {
-          "name": "subjects",
-          "type": "string",
-          "example": "Computation and Language (cs.CL); Machine Learning (cs.LG)",
-          "at": {
-            "from": "text",
-            "regex": "^Subjects:\\s*(.+)$"
-          }
-        },
-        {
           "name": "primary_category",
           "type": "string",
+          "optional": false,
           "example": "cs.CL",
           "at": {
             "from": "text",
-            "regex": "^Cite as:\\s*arXiv:\\S+ \\[([^\\]]+)\\]"
+            "regex": "^Cite as:\\s+arXiv:\\S+ \\[([^\\]]+)\\]"
+          }
+        },
+        {
+          "name": "subjects",
+          "type": "string",
+          "optional": false,
+          "example": "Computation and Language (cs.CL); Machine Learning (cs.LG)",
+          "at": {
+            "from": "text",
+            "regex": "^Subjects:\\s+(.+)$"
           }
         },
         {
@@ -77,25 +84,27 @@
           "example": "15 pages, 5 figure",
           "at": {
             "from": "text",
-            "regex": "^Comments:\\s*(.+)$"
+            "regex": "^Comments:\\s+(.+)$"
           }
         },
         {
           "name": "doi",
           "type": "url",
+          "optional": false,
           "example": "https://doi.org/10.48550/arXiv.1706.03762",
           "at": {
             "from": "text",
-            "regex": "^(https://doi\\.org/\\S+)\\s*$"
+            "regex": "^(https://doi\\.org/\\S+)$"
           }
         },
         {
-          "name": "submitted_by",
+          "name": "submitter",
           "type": "string",
+          "optional": false,
           "example": "Ashish Vaswani",
           "at": {
             "from": "text",
-            "regex": "^From: (.+?) \\[view email\\]"
+            "regex": "^From:\\s+(.+?)\\s+\\[view email\\]"
           }
         },
         {
@@ -105,18 +114,18 @@
           "example": "v7",
           "at": {
             "from": "text",
-            "regex": "latest version [^(\\]]+\\((v\\d+)\\)"
+            "regex": "latest version [^(\\]]*\\((v\\d+)\\)"
           }
         }
       ],
       "exampleUrl": "https://arxiv.org/abs/1706.03762v1",
-      "createdAt": "2026-11-11T11:22:17.498Z",
+      "createdAt": "2026-11-11T15:58:07.768Z",
       "source": "teacher",
       "teacher": {
         "model": "claude-opus-5-5",
-        "costUsd": 0.0596934,
-        "tokens": 6172,
-        "seconds": 12.7
+        "costUsd": 0.0642934,
+        "tokens": 6402,
+        "seconds": 14.6
       }
     }
   ]

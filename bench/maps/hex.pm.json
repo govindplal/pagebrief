@@ -18,16 +18,6 @@
           }
         },
         {
-          "name": "description",
-          "type": "string",
-          "optional": false,
-          "example": "Compose web applications with functions",
-          "at": {
-            "from": "meta",
-            "name": "description"
-          }
-        },
-        {
           "name": "version",
           "type": "string",
           "optional": false,
@@ -38,43 +28,53 @@
           }
         },
         {
+          "name": "description",
+          "type": "string",
+          "optional": true,
+          "example": "Compose web applications with functions",
+          "at": {
+            "from": "meta",
+            "name": "description"
+          }
+        },
+        {
           "name": "downloads_this_version",
-          "type": "integer",
+          "type": "number",
           "optional": false,
-          "example": "5",
+          "example": "5659546",
           "at": {
             "from": "text",
-            "regex": "^THIS VERSION\\n\\n([\\d ]+)$"
+            "regex": "^THIS VERSION\\n\\n([^\\n]+)$"
           }
         },
         {
           "name": "downloads_yesterday",
-          "type": "integer",
+          "type": "number",
           "optional": false,
-          "example": "129",
+          "example": "129890",
           "at": {
             "from": "text",
-            "regex": "^YESTERDAY\\n\\n([\\d ]+)$"
+            "regex": "^YESTERDAY\\n\\n([^\\n]+)$"
           }
         },
         {
           "name": "downloads_last_7_days",
-          "type": "integer",
+          "type": "number",
           "optional": false,
-          "example": "743",
+          "example": "743858",
           "at": {
             "from": "text",
-            "regex": "^LAST 7 DAYS\\n\\n([\\d ]+)$"
+            "regex": "^LAST 7 DAYS\\n\\n([^\\n]+)$"
           }
         },
         {
           "name": "downloads_all_time",
-          "type": "integer",
+          "type": "number",
           "optional": false,
-          "example": "169",
+          "example": "169957274",
           "at": {
             "from": "text",
-            "regex": "^ALL TIME\\n\\n([\\d ]+)$"
+            "regex": "^ALL TIME\\n\\n([^\\n]+)$"
           }
         },
         {
@@ -100,7 +100,7 @@
         {
           "name": "build_tools",
           "type": "string",
-          "optional": false,
+          "optional": true,
           "example": "mix",
           "at": {
             "from": "text",
@@ -119,13 +119,13 @@
         }
       ],
       "exampleUrl": "https://hex.pm/packages/plug/1.14.0",
-      "createdAt": "2026-11-11T11:21:52.226Z",
+      "createdAt": "2026-11-11T15:57:40.935Z",
       "source": "teacher",
       "teacher": {
         "model": "claude-opus-5-5",
-        "costUsd": 0.038653400000000004,
-        "tokens": 3491,
-        "seconds": 12.3
+        "costUsd": 0.035337400000000005,
+        "tokens": 3324,
+        "seconds": 10.9
       }
     }
   ]

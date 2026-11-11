@@ -5,7 +5,7 @@
       "version": 1,
       "host": "news.ycombinator.com",
       "pattern": "/item",
-      "pageType": "Hacker News story item page",
+      "pageType": "Hacker News item page",
       "fields": [
         {
           "name": "title",
@@ -14,17 +14,17 @@
           "example": "My YC app: Dropbox - Throw away your USB drive",
           "at": {
             "from": "text",
-            "regex": "^\\s*(.+?)(?: \\([^()\\n]+\\))?\\s*\\n\\s*\\d+ points? by "
+            "regex": "^\\s*(.+?) \\([^()\\s]+\\)\\s*$"
           }
         },
         {
-          "name": "site_domain",
+          "name": "domain",
           "type": "string",
           "optional": true,
           "example": "getdropbox.com",
           "at": {
             "from": "text",
-            "regex": "\\(([^()\\s]+)\\)\\s*\\n\\s*\\d+ points? by "
+            "regex": "^\\s*.+? \\(([^()\\s]+)\\)\\s*$"
           }
         },
         {
@@ -48,7 +48,7 @@
           }
         },
         {
-          "name": "submitted_date",
+          "name": "posted_date",
           "type": "date",
           "optional": false,
           "example": "April 4, 2007",
@@ -64,18 +64,18 @@
           "example": "71",
           "at": {
             "from": "text",
-            "regex": "^\\s*\\d+ points? by .*\\|\\s*(\\d+)\\s+comments?\\s*$"
+            "regex": "^\\s*\\d+ points? by .*\\| (\\d+)\\s+comments?\\s*$"
           }
         }
       ],
       "exampleUrl": "https://news.ycombinator.com/item?id=8863",
-      "createdAt": "2026-11-11T11:22:33.285Z",
+      "createdAt": "2026-11-11T15:58:16.195Z",
       "source": "teacher",
       "teacher": {
         "model": "claude-opus-5-5",
-        "costUsd": 0.05466940000000001,
-        "tokens": 5679,
-        "seconds": 13.4
+        "costUsd": 0.0391694,
+        "tokens": 4904,
+        "seconds": 6.4
       }
     }
   ]

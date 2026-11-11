@@ -10,7 +10,6 @@
         {
           "name": "crate_name",
           "type": "string",
-          "optional": false,
           "example": "serde",
           "at": {
             "from": "json",
@@ -21,7 +20,6 @@
         {
           "name": "version",
           "type": "string",
-          "optional": false,
           "example": "1.0.190",
           "at": {
             "from": "json",
@@ -52,9 +50,8 @@
           }
         },
         {
-          "name": "published_at",
+          "name": "release_date",
           "type": "date",
-          "optional": false,
           "example": "2023-10-26T03:05:46.070043Z",
           "at": {
             "from": "json",
@@ -65,23 +62,11 @@
         {
           "name": "version_downloads",
           "type": "integer",
-          "optional": false,
-          "example": "8604684",
+          "example": "8605732",
           "at": {
             "from": "json",
             "url": "/api/v1/crates/*/*",
             "path": "version.downloads"
-          }
-        },
-        {
-          "name": "publisher",
-          "type": "string",
-          "optional": true,
-          "example": "David Tolnay",
-          "at": {
-            "from": "json",
-            "url": "/api/v1/crates/*/*",
-            "path": "version.published_by.name"
           }
         },
         {
@@ -99,12 +84,21 @@
           "name": "crate_size",
           "type": "integer",
           "unit": "bytes",
-          "optional": false,
           "example": "76455",
           "at": {
             "from": "json",
             "url": "/api/v1/crates/*/*",
             "path": "version.crate_size"
+          }
+        },
+        {
+          "name": "yanked",
+          "type": "boolean",
+          "example": "false",
+          "at": {
+            "from": "json",
+            "url": "/api/v1/crates/*/*",
+            "path": "version.yanked"
           }
         },
         {
@@ -119,25 +113,25 @@
           }
         },
         {
-          "name": "yanked",
-          "type": "boolean",
-          "optional": false,
-          "example": "false",
+          "name": "published_by",
+          "type": "string",
+          "optional": true,
+          "example": "dtolnay",
           "at": {
             "from": "json",
             "url": "/api/v1/crates/*/*",
-            "path": "version.yanked"
+            "path": "version.published_by.login"
           }
         }
       ],
       "exampleUrl": "https://crates.io/crates/serde/1.0.190",
-      "createdAt": "2026-11-11T11:22:03.072Z",
+      "createdAt": "2026-11-11T15:57:51.660Z",
       "source": "teacher",
       "teacher": {
         "model": "claude-opus-5-5",
-        "costUsd": 0.0761614,
-        "tokens": 8979,
-        "seconds": 8.2
+        "costUsd": 0.0753014,
+        "tokens": 8936,
+        "seconds": 7.8
       }
     }
   ]
