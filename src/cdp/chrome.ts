@@ -35,6 +35,8 @@ export interface LaunchOptions {
   executablePath?: string;
   headless?: boolean;
   timeoutMs?: number;
+  /** Extra Chrome command-line flags. */
+  extraArgs?: string[];
 }
 
 export async function launchChrome(opts: LaunchOptions = {}): Promise<Chrome> {
@@ -49,6 +51,7 @@ export async function launchChrome(opts: LaunchOptions = {}): Promise<Chrome> {
     "--disable-background-networking",
     "--mute-audio",
     ...(opts.headless === false ? [] : ["--headless=new"]),
+    ...(opts.extraArgs ?? []),
     "about:blank",
   ];
   const proc = spawn(opts.executablePath ?? findChrome(), args, { stdio: ["ignore", "ignore", "pipe"] });

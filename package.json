@@ -1,6 +1,6 @@
 {
   "name": "agentic-browser",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An MCP browser layer that gives AI agents any web page as compact, typed text over raw CDP, with a benchmark against Playwright MCP and agent-browser",
   "author": "Govind P Lal",
   "license": "Apache-2.0",
@@ -9,6 +9,16 @@
     "url": "https://github.com/govindplal/agentic-browser"
   },
   "type": "module",
+  "bin": {
+    "agentic-browser": "bin/agentic-browser.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "!src/**/*.test.ts",
+    "README.md",
+    "LICENSE"
+  ],
   "private": true,
   "engines": {
     "node": ">=22"

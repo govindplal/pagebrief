@@ -1,6 +1,7 @@
 // The agent-facing operations, independent of transport (MCP, CLI, tests).
 // The browser starts lazily on the first open() and is reused after that.
 import { Browser, type BrowserOptions } from "./browser.ts";
+import { assertPublicUrl } from "./net/guard.ts";
 import { findIn, readText, renderOpen, type PageData } from "./page/view.ts";
 
 export interface EngineOptions extends BrowserOptions {
@@ -11,6 +12,8 @@ export interface EngineOptions extends BrowserOptions {
 export class Engine {
   #browser: Promise<Browser> | null = null;
   #page: PageData | null = null;
+  /** Opens run one at a time: there is one tab, and agents often send tool calls in parallel. */
+  #queue: Promise<unknown> = Promise.resolve();
 
   constructor(private readonly opts: EngineOptions = {}) {}
 
@@ -32,9 +35,18 @@ export class Engine {
     return this.#page;
   }
 
-  async open(url: string): Promise<string> {
+  open(url: string): Promise<string> {
+    const run = this.#queue.then(() => this.#open(url));
+    this.#queue = run.catch(() => {});
+    return run;
+  }
+
+  async #open(url: string): Promise<string> {
     if (!/^https?:\/\//i.test(url)) throw new Error(`expected an absolute http(s) URL, got "${url}"`);
+    if (!this.opts.allowPrivate) await assertPublicUrl(url);
     const browser = await this.#getBrowser();
+    // A failed open leaves no page behind, so find/read never answer from a stale one.
+    this.#page = null;
     this.#page = await browser.open(url);
     return renderOpen(this.#page, this.opts.textBudget);
   }
