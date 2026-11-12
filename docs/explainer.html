@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pagebrief — the full story</title>
+<style>
+  :root {
+    --ivory:#FAF9F5; --paper:#FFFFFF; --slate:#141413; --clay:#D97757; --clay-d:#B85C3E;
+    --oat:#E3DACC; --olive:#788C5D; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5; --g500:#87867F; --g700:#3D3D3A;
+    --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--ivory); color:var(--slate); font-family:var(--sans); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  a { color:var(--clay-d); text-decoration-color:var(--oat); text-underline-offset:3px; }
+  a:hover { text-decoration-color:var(--clay); }
+  :not(pre) > code { font-family:var(--mono); font-size:.86em; background:var(--g100); border:1px solid var(--g200); padding:1px 6px; border-radius:5px; }
+  .layout { max-width:1160px; margin:0 auto; padding:0 32px 140px; display:grid; grid-template-columns:minmax(0,1fr) 180px; gap:48px; }
+  @media (max-width:980px) { .layout { grid-template-columns:1fr; padding:0 16px 100px; } .toc { display:none; } }
+  main { min-width:0; }
+  header.masthead { padding:72px 0 44px; border-bottom:1.5px solid var(--g300); }
+  .eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--g500); margin-bottom:18px; display:flex; align-items:center; gap:12px; }
+  .eyebrow::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+  h1 { font-family:var(--serif); font-weight:500; font-size:clamp(36px,5.2vw,58px); line-height:1.06; letter-spacing:-.018em; margin:0 0 8px; max-width:18ch; }
+  h1 em { font-style:italic; color:var(--clay); }
+  .intro { font-size:16.5px; color:var(--g700); margin:22px 0 0; max-width:660px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:26px; }
+  .chip { font-size:12.5px; padding:6px 13px; border:1.5px solid var(--g300); border-radius:999px; background:var(--paper); color:var(--g700); text-decoration:none; }
+  .chip:hover { border-color:var(--clay); color:var(--clay-d); }
+  .chip.tag { font-family:var(--mono); font-size:11.5px; padding:3px 10px; background:var(--g100); }
+  .tldr { background:var(--slate); color:#F3F1EA; border-radius:14px; padding:22px 26px; margin:34px 0 0; }
+  .tldr .lbl { font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#A9A79F; margin-bottom:8px; }
+  .tldr p { margin:0 0 8px; font-size:15.5px; } .tldr p:last-child { margin:0; }
+  .tldr code { background:#2a2a28; border-color:#3a3a37; color:#F3F1EA; }
+  section { padding-top:64px; scroll-margin-top:16px; }
+  .sec-head { display:flex; align-items:baseline; gap:14px; margin-bottom:6px; }
+  .sec-num { font-family:var(--mono); font-size:12px; color:var(--clay); }
+  h2 { font-family:var(--serif); font-weight:500; font-size:30px; letter-spacing:-.01em; margin:0; }
+  h3 { font-family:var(--serif); font-weight:500; font-size:20px; margin:32px 0 8px; }
+  .lead { color:var(--g700); max-width:700px; margin:8px 0 24px; }
+  .note { font-size:13.5px; color:var(--g500); }
+  .card { background:var(--paper); border:1.5px solid var(--g200); border-radius:14px; padding:20px 22px; }
+  .grid2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:860px) { .grid2, .grid3 { grid-template-columns:1fr; } }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:22px 0 0; }
+  @media (max-width:720px) { .stats { grid-template-columns:repeat(2,1fr); } }
+  .stat { background:var(--paper); border:1.5px solid var(--g200); border-radius:12px; padding:16px 18px; }
+  .stat.hot { border-left:3px solid var(--clay); }
+  .stat-num { font-family:var(--serif); font-size:32px; line-height:1.1; }
+  .stat-label { font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); margin-top:4px; }
+  .stat-sub { font-family:var(--mono); font-size:11px; color:var(--g500); margin-top:6px; }
+  .pitch { border-left:3px solid var(--clay); padding:4px 0 4px 18px; margin:0 0 18px; }
+  .pitch .lbl { font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--g500); margin-bottom:4px; }
+  .pitch p { margin:0; font-family:var(--serif); font-size:18px; line-height:1.5; }
+  .copy { font-family:var(--mono); font-size:11px; border:1.5px solid var(--g300); background:var(--paper); border-radius:6px; padding:2px 9px; cursor:pointer; color:var(--g700); margin-top:8px; }
+  .copy:hover { border-color:var(--clay); }
+  .diagram svg { width:100%; height:auto; display:block; }
+  svg text { font-family:var(--mono); fill:var(--slate); }
+  svg .sub { font-size:10px; fill:var(--g500); }
+  svg .box { fill:var(--paper); stroke:var(--g300); stroke-width:1.5; }
+  svg .box.hot { fill:#FBEAE3; stroke:var(--clay); }
+  svg .box.cool { fill:#EEF2E8; stroke:var(--olive); }
+  svg .band { fill:var(--g100); }
+  svg .edge { stroke:var(--g500); stroke-width:1.4; fill:none; marker-end:url(#arrow); }
+  svg .bl { font-size:10px; fill:var(--g500); letter-spacing:.08em; }
+  .tl { position:relative; padding-left:30px; margin-top:8px; }
+  .tl::before { content:""; position:absolute; left:7px; top:6px; bottom:6px; width:1.5px; background:var(--g300); }
+  .tl-entry { position:relative; padding:0 0 24px; }
+  .tl-dot { position:absolute; left:-30px; top:4px; width:15px; height:15px; border-radius:50%; background:var(--olive); border:3px solid var(--ivory); }
+  .tl-entry.bad .tl-dot { background:var(--clay); } .tl-entry.key .tl-dot { background:var(--slate); }
+  .tl-time { display:inline-block; font-family:var(--mono); font-size:11.5px; background:var(--g100); border:1px solid var(--g200); border-radius:6px; padding:1px 8px; margin-bottom:6px; }
+  .tl-entry h4 { margin:0 0 4px; font-family:var(--serif); font-weight:500; font-size:18px; }
+  .tl-body { margin:0; font-size:14.5px; color:var(--g700); }
+  .lesson { display:block; margin-top:6px; font-size:13.5px; color:var(--clay-d); }
+  .concept { display:flex; flex-direction:column; gap:8px; }
+  .concept h4 { margin:0; font-family:var(--serif); font-weight:500; font-size:19px; }
+  .concept .kind { font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); }
+  .concept dl { margin:0; display:grid; grid-template-columns:78px 1fr; gap:6px 12px; font-size:13.8px; }
+  .concept dt { font-family:var(--mono); font-size:11px; color:var(--g500); padding-top:2px; text-transform:uppercase; letter-spacing:.06em; }
+  .concept dd { margin:0; color:var(--g700); }
+  .concept .learn { font-size:13px; border-top:1px solid var(--g100); padding-top:8px; margin-top:auto; }
+  .filter { display:inline-flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+  .filter button { font:inherit; font-size:12.5px; padding:5px 14px; border:1.5px solid var(--g300); border-radius:999px; background:var(--paper); cursor:pointer; color:var(--g700); }
+  .filter button[aria-pressed=true] { background:var(--slate); color:#fff; border-color:var(--slate); }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; background:var(--paper); border:1.5px solid var(--g200); border-radius:12px; overflow:hidden; }
+  th { text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); padding:10px 14px; background:var(--g100); border-bottom:1.5px solid var(--g200); }
+  td { padding:10px 14px; border-bottom:1px solid var(--g100); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  tr.me td { background:#FDF4F0; }
+  .table-wrap { overflow-x:auto; }
+  details { background:var(--paper); border:1.5px solid var(--g200); border-radius:12px; margin-bottom:10px; }
+  summary { cursor:pointer; padding:14px 18px; font-family:var(--serif); font-size:17px; list-style:none; display:flex; justify-content:space-between; gap:12px; }
+  summary::-webkit-details-marker { display:none; }
+  summary::after { content:"+"; font-family:var(--mono); color:var(--clay); }
+  details[open] summary::after { content:"–"; }
+  details .body { padding:0 18px 16px; font-size:14.5px; color:var(--g700); }
+  details .body p { margin:0 0 8px; }
+  .quiz-q { margin-bottom:14px; }
+  .quiz-q p { margin:0 0 10px; font-weight:600; }
+  .opts { display:flex; flex-direction:column; gap:6px; }
+  .opts button { font:inherit; font-size:14px; text-align:left; padding:9px 13px; border:1.5px solid var(--g300); border-radius:9px; background:var(--ivory); cursor:pointer; color:var(--g700); }
+  .opts button:hover { border-color:var(--clay); }
+  .opts button.right { border-color:var(--olive); background:#F1F5EC; color:var(--slate); }
+  .opts button.wrong { border-color:var(--clay); background:#FBEFEA; }
+  .explain { display:none; margin-top:8px; font-size:13.5px; color:var(--g700); }
+  .quiz-q.done .explain { display:block; }
+  .score { font-family:var(--mono); font-size:13px; color:var(--g500); }
+  .res-group h4 { margin:0 0 8px; font-family:var(--serif); font-weight:500; font-size:18px; }
+  .res-group ul { margin:0; padding-left:18px; font-size:14px; }
+  .res-group li { margin-bottom:7px; }
+  .res-group li span { color:var(--g500); font-size:13px; }
+  .glossary { display:grid; grid-template-columns:180px 1fr; gap:8px 18px; font-size:14px; }
+  @media (max-width:640px) { .glossary { grid-template-columns:1fr; } }
+  .glossary dt { font-family:var(--mono); font-size:12.5px; font-weight:600; }
+  .glossary dd { margin:0 0 6px; color:var(--g700); }
+  .toc { position:sticky; top:28px; align-self:start; padding-top:80px; }
+  .toc .lbl { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--g500); margin-bottom:10px; }
+  .toc a { display:block; font-size:13px; color:var(--g500); text-decoration:none; padding:4px 0 4px 12px; border-left:1.5px solid var(--g200); }
+  .toc a.on { color:var(--clay-d); border-left-color:var(--clay); }
+  .pro, .con { padding-left:20px; position:relative; font-size:14px; margin-bottom:4px; }
+  .pro::before { content:"+"; position:absolute; left:4px; color:var(--olive); font-weight:700; }
+  .con::before { content:"–"; position:absolute; left:4px; color:var(--clay-d); font-weight:700; }
+  footer { margin-top:72px; padding-top:20px; border-top:1.5px solid var(--g300); font-size:13px; color:var(--g500); }
+</style>
+</head>
+<body>
+<div class="layout">
+<main>
+
+<header class="masthead">
+  <div class="eyebrow">Project explainer · interview prep</div>
+  <h1>pagebrief: what it is, how it got here, <em>why</em> it's built this way.</h1>
+  <p class="intro">Everything you need to explain this project: what it does, the order things were built in and what each step taught, the honest conclusion from 840 benchmark runs, every concept and architecture used (with the reason it was chosen over the alternative), likely interview questions, a self-quiz, and a reading list.</p>
+  <div class="chips">
+    <a class="chip" href="#pitch">The pitch</a><a class="chip" href="#what">What it does</a><a class="chip" href="#arch">Architecture</a>
+    <a class="chip" href="#journey">How we got here</a><a class="chip" href="#results">Results</a><a class="chip" href="#conclusion">Conclusion</a>
+    <a class="chip" href="#concepts">Concepts</a><a class="chip" href="#decisions">Decisions</a><a class="chip" href="#interview">Interview Q&amp;A</a>
+    <a class="chip" href="#quiz">Self-quiz</a><a class="chip" href="#glossary">Glossary</a><a class="chip" href="#resources">Resources</a>
+  </div>
+  <div class="tldr">
+    <div class="lbl">TL;DR</div>
+    <p>AI agents read web pages through "browser tools" that are expensive: most of the cost is not the page, it is the tool definitions sent on every turn. pagebrief is an MCP server that drives Chrome directly over the DevTools Protocol and gives the agent a short, typed view of a page in one call. For page types it has seen before, it answers from <b>page maps</b>: field locations a large model wrote once, checked by plain code on every load.</p>
+    <p>Result: 4.8x fewer tokens than Playwright MCP at 100% success, but only 1.1x cheaper per task (cached tokens are cheap) and about 2 seconds slower. On repeat visits with a map: 3.5x cheaper at the same speed.</p>
+  </div>
+</header>
+
+<section id="pitch">
+  <div class="sec-head"><span class="sec-num">01</span><h2>The pitch</h2></div>
+  <p class="lead">Three lengths. Learn the short one by heart and expand only when asked.</p>
+  <div class="pitch"><div class="lbl">10 seconds</div><p id="p10">I built an MCP server that lets AI agents read web pages for a fraction of the tokens, and benchmarked it against Playwright MCP on 840 agent runs.</p></div>
+  <div class="pitch"><div class="lbl">30 seconds</div><p id="p30">Agents browse the web through tools like Playwright MCP, but I measured that most of their tokens go to tool definitions re-sent every turn, not to page content. So I built pagebrief: a few small tools, Chrome driven over raw CDP, and a typed page view in one call. For repeat page types, a large model writes a "map" of where fields live once, and plain code validates it on every load, failing closed to text. It uses 4.8x fewer tokens than Playwright MCP at the same accuracy, and repeat visits are 3.5x cheaper.</p></div>
+  <div class="pitch"><div class="lbl">2 minutes, the honest version</div><p id="p2">Add: I wrote the benchmark before the engine, which changed the design. The token win did not become an equal cost win because re-sent definitions are prompt-cache reads, billed at about a tenth of the input price, so the per-task saving on first visits is small. I'm also slower than Playwright MCP on seconds, which I report openly. The real lever turned out to be repeat visits: a validated map removes most of the model's reading work. Safety-wise it refuses private-network URLs (SSRF), labels every action by risk, and treats page text as untrusted.</p></div>
+  <button class="copy" id="copyPitch">Copy all three</button>
+</section>
+
+<section id="what">
+  <div class="sec-head"><span class="sec-num">02</span><h2>What the project does</h2></div>
+  <p class="lead">pagebrief sits between an AI agent and a real browser. The agent never drives the browser itself; it asks for a page and gets an answer-ready view.</p>
+  <div class="grid3">
+    <div class="card"><b>open(url)</b><p class="note" style="margin:6px 0 0">Loads the page in headless Chrome, captures the JSON the page fetched, and returns title, structured data, forms, and the start of the visible text. If a map exists, checked typed fields come first.</p></div>
+    <div class="card"><b>find(pattern) · read(from)</b><p class="note" style="margin:6px 0 0">Search everything on the page (text, links, JSON values) with a regex, or read the next slice, without re-sending the page.</p></div>
+    <div class="card"><b>do(...)</b><p class="note" style="margin:6px 0 0">Off by default. Clicks, fills, submits, each labelled read / write / dangerous, capped by a policy. Returns a diff of what changed.</p></div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">~6,100</div><div class="stat-label">Lines of TypeScript</div><div class="stat-sub">product + benchmark</div></div>
+    <div class="stat"><div class="stat-num">2</div><div class="stat-label">Runtime deps</div><div class="stat-sub">MCP SDK, zod</div></div>
+    <div class="stat"><div class="stat-num">70</div><div class="stat-label">Tests</div><div class="stat-sub">incl. real Chrome</div></div>
+    <div class="stat hot"><div class="stat-num">840</div><div class="stat-label">Benchmark runs</div><div class="stat-sub">final campaign</div></div>
+  </div>
+</section>
+
+<section id="arch">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Architecture</h2></div>
+  <p class="lead">Layered, with one stable surface at the top. Each band can be replaced without touching the one above it. This is the ports-and-adapters idea: the agent-facing port stays fixed, the browser and model are adapters.</p>
+  <div class="card diagram">
+    <svg viewBox="0 0 780 420" role="img" aria-label="Layered architecture of pagebrief">
+      <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#87867F"/></marker></defs>
+      <rect class="band" x="0" y="10" width="780" height="70" rx="10"/><text class="bl" x="14" y="28">AGENT</text>
+      <rect class="band" x="0" y="95" width="780" height="70" rx="10"/><text class="bl" x="14" y="113">PROTOCOL</text>
+      <rect class="band" x="0" y="180" width="780" height="140" rx="10"/><text class="bl" x="14" y="198">ENGINE</text>
+      <rect class="band" x="0" y="335" width="780" height="75" rx="10"/><text class="bl" x="14" y="353">BROWSER</text>
+      <rect class="box" x="300" y="25" width="180" height="44" rx="9"/><text x="390" y="45" text-anchor="middle" font-size="12" font-weight="600">Claude / any MCP client</text><text class="sub" x="390" y="60" text-anchor="middle">decides what to read</text>
+      <rect class="box" x="300" y="110" width="180" height="44" rx="9"/><text x="390" y="130" text-anchor="middle" font-size="12" font-weight="600">mcp.ts</text><text class="sub" x="390" y="145" text-anchor="middle">JSON-RPC over stdio</text>
+      <rect class="box hot" x="300" y="210" width="180" height="44" rx="9"/><text x="390" y="230" text-anchor="middle" font-size="12" font-weight="600">engine.ts</text><text class="sub" x="390" y="245" text-anchor="middle">queue · pages · maps</text>
+      <rect class="box" x="90" y="210" width="170" height="44" rx="9"/><text x="175" y="230" text-anchor="middle" font-size="12" font-weight="600">net/guard.ts</text><text class="sub" x="175" y="245" text-anchor="middle">SSRF guard</text>
+      <rect class="box cool" x="520" y="210" width="170" height="44" rx="9"/><text x="605" y="230" text-anchor="middle" font-size="12" font-weight="600">maps/apply.ts</text><text class="sub" x="605" y="245" text-anchor="middle">checker, no model</text>
+      <rect class="box" x="520" y="268" width="170" height="40" rx="9"/><text x="605" y="286" text-anchor="middle" font-size="12" font-weight="600">teacher · student</text><text class="sub" x="605" y="300" text-anchor="middle">Llm interface</text>
+      <rect class="box" x="300" y="268" width="180" height="40" rx="9"/><text x="390" y="286" text-anchor="middle" font-size="12" font-weight="600">page/view.ts</text><text class="sub" x="390" y="300" text-anchor="middle">pure render functions</text>
+      <rect class="box" x="210" y="350" width="170" height="44" rx="9"/><text x="295" y="370" text-anchor="middle" font-size="12" font-weight="600">browser.ts + cdp/</text><text class="sub" x="295" y="385" text-anchor="middle">WebSocket, one evaluate</text>
+      <rect class="box" x="420" y="350" width="170" height="44" rx="9"/><text x="505" y="370" text-anchor="middle" font-size="12" font-weight="600">Chrome / Lightpanda</text><text class="sub" x="505" y="385" text-anchor="middle">launched or --cdp-url</text>
+      <path class="edge" d="M390 69V108"/><path class="edge" d="M390 154V208"/><path class="edge" d="M300 232H262"/><path class="edge" d="M480 232H518"/>
+      <path class="edge" d="M605 268V256"/><path class="edge" d="M390 254V266"/><path class="edge" d="M340 254L300 348"/><path class="edge" d="M380 372H418"/>
+    </svg>
+  </div>
+  <p class="note" style="margin-top:10px">The <code>Llm</code> interface has two adapters: Claude through <code>claude -p</code> on a subscription, and any Ollama model. The browser adapter can be Chrome launched locally or any CDP endpoint.</p>
+</section>
+
+<section id="journey">
+  <div class="sec-head"><span class="sec-num">04</span><h2>How we got here</h2></div>
+  <p class="lead">The order matters for an interview story: each step was a response to something measured, not a feature list written in advance.</p>
+  <div class="tl">
+    <div class="tl-entry key"><span class="tl-dot"></span><span class="tl-time">step 1 · benchmark first</span><h4>Measure before building</h4><p class="tl-body">60 reading tasks on 20 stable public sites, each answer verified against page HTML or the site's API. Headless Claude Code drives each tool. First finding: on Playwright MCP a median task took about 26k tokens but only about 2k characters of that was page content; most was tool definitions (~8k tokens) re-sent every turn. agent-browser sent ~22k tokens of definitions per turn.</p><span class="lesson">Lesson: the expensive part is the tool surface and the number of turns, not the page.</span></div>
+    <div class="tl-entry"><span class="tl-dot"></span><span class="tl-time">step 2 · engine v0.1</span><h4>Three small tools over raw CDP</h4><p class="tl-body"><code>open</code>, <code>find</code>, <code>read</code>, about 1,300 characters of definitions in total. One <code>Runtime.evaluate</code> to extract the page, and the page's own JSON captured from the Network domain. Measured 2026-11-09: 95% success, 5,346 median tokens (4.9x fewer than Playwright MCP), 12.7 s.</p><span class="lesson">Lesson: an answer-ready view means most lookups take one call.</span></div>
+    <div class="tl-entry"><span class="tl-dot"></span><span class="tl-time">step 3 · v0.1b</span><h4>Interaction-heavy pages</h4><p class="tl-body">Better search over JSON documents and pages that need interaction. These still cost about 20k tokens at the median, which pointed at actions as future work.</p></div>
+    <div class="tl-entry bad"><span class="tl-dot"></span><span class="tl-time">step 4 · v0.2 hardening</span><h4>A review found what the benchmark could not see</h4><p class="tl-body"><code>open</code> accepted any URL, so a page could steer an agent to <code>localhost</code> or a cloud metadata address (SSRF). Parallel opens raced on one tab. Analytics JSON crowded out real data. Fixes: a private-network guard with DNS and redirect checks, a queue so opens run one at a time, JSON ranking (own site first, trackers last), main-content start.</p><span class="lesson">Lesson: friendly benchmark sites hide security and concurrency bugs. Review the code separately from the numbers.</span></div>
+    <div class="tl-entry"><span class="tl-dot"></span><span class="tl-time">step 5 · rename + CI</span><h4>agentic-browser → pagebrief</h4><p class="tl-body">The npm name belonged to another package. Added GitHub Actions on Ubuntu and Windows, including a clean install from the packed tarball, so packaging bugs show up before users do.</p></div>
+    <div class="tl-entry key"><span class="tl-dot"></span><span class="tl-time">step 6 · v0.3 page maps</span><h4>Make repeat visits nearly free</h4><p class="tl-body">Teacher writes a map once per page type; checker validates every field on every load; student repairs; grader labels failures. Also: bot-check and login-wall reports, invisible-text drop, several open pages, a repeat-visit benchmark track, tool-search mode, hex.pm replacing openlibrary.org (which began serving bot checks).</p></div>
+    <div class="tl-entry"><span class="tl-dot"></span><span class="tl-time">step 7 · actions + more</span><h4>Actions, external browsers, sharing, baselines</h4><p class="tl-body">The <code>do</code> tool with risk labels and diffs; <code>--cdp-url</code> for any CDP browser; map export and import with screening; a screenshot baseline; a campaign driver that waits across 5-hour usage windows.</p></div>
+    <div class="tl-entry bad"><span class="tl-dot"></span><span class="tl-time">step 8 · the number bug</span><h4>A wrong value passed every check</h4><p class="tl-body">hex.pm prints downloads as "168 360" with a space between thousands. The parser read 168. Type and shape checks passed, so the agent would have got a confidently wrong number. Fixed the parser with tests, re-taught the maps with <code>claude-opus-5-5</code>, reran the map evaluation.</p><span class="lesson">Lesson: validation that only checks types can still pass wrong values. Test the parser on real-world formats.</span></div>
+    <div class="tl-entry key"><span class="tl-dot"></span><span class="tl-time">step 9 · campaign</span><h4>840 runs across three tracks</h4><p class="tl-body">Main track (5 tools), tool-search track (4 tools), repeat-visit track (5 tools including mapped pagebrief). Stopped automatically at 85% of each 5-hour quota window and resumed after the reset.</p></div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="sec-head"><span class="sec-num">05</span><h2>Results</h2></div>
+  <p class="lead">Sonnet 5.5, effort medium, one repeat per task. Cost is the CLI's list-price estimate.</p>
+  <h3 style="margin-top:0">Main track: 60 tasks</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Tool</th><th>Success</th><th>Median tokens</th><th>Median s</th><th>Median cost</th><th>Mean calls</th></tr>
+    <tr><td>Playwright MCP</td><td>100%</td><td>26,144</td><td>10.3</td><td>$0.0132</td><td>2.8</td></tr>
+    <tr class="me"><td><b>pagebrief</b></td><td>100%</td><td>5,412</td><td>12.3</td><td>$0.0120</td><td>1.8</td></tr>
+    <tr><td>agent-browser</td><td>100%</td><td>78,186</td><td>13.6</td><td>$0.0332</td><td>2.4</td></tr>
+    <tr><td>plain-fetch</td><td>92%*</td><td>9,808</td><td>7.7</td><td>$0.0196</td><td>2.3</td></tr>
+    <tr><td>screenshot-browser</td><td>98%</td><td>9,105</td><td>13.2</td><td>$0.0158</td><td>2.4</td></tr>
+  </table></div>
+  <h3>Tool search on: 60 tasks</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Tool</th><th>Success</th><th>Median tokens</th><th>Median s</th><th>Median cost</th></tr>
+    <tr><td>Playwright MCP</td><td>100%</td><td>16,127</td><td>28.6</td><td>$0.0229</td></tr>
+    <tr class="me"><td><b>pagebrief</b></td><td>100%</td><td>8,472</td><td>27.0</td><td>$0.0139</td></tr>
+    <tr><td>agent-browser</td><td>100%</td><td>23,130</td><td>23.4</td><td>$0.0352</td></tr>
+    <tr><td>plain-fetch</td><td>93%*</td><td>12,560</td><td>17.1</td><td>$0.0202</td></tr>
+  </table></div>
+  <h3>Repeat visits: 60 tasks on taught page types</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Tool</th><th>Success</th><th>Median tokens</th><th>Median s</th><th>Median cost</th></tr>
+    <tr><td>Playwright MCP</td><td>100%</td><td>25,620</td><td>8.5</td><td>$0.0113</td></tr>
+    <tr><td>plain-fetch</td><td>100%</td><td>4,615</td><td>5.9</td><td>$0.0096</td></tr>
+    <tr><td>screenshot-browser</td><td>100%</td><td>4,820</td><td>9.0</td><td>$0.0098</td></tr>
+    <tr><td>pagebrief (no map)</td><td>100%</td><td>4,656</td><td>8.8</td><td>$0.0089</td></tr>
+    <tr class="me"><td><b>pagebrief (mapped)</b></td><td>100%</td><td>3,947</td><td>8.4</td><td>$0.0032</td></tr>
+  </table></div>
+  <p class="note" style="margin-top:10px">* Some plain-fetch answers of <code>NOT_FOUND</code> on Hacker News tasks were scored ok; the scorer is under review, so its rate is provisional. The map check found 59 of 60 task pages correct; the miss (<code>rv-hn-2</code>, a <code>title</code> field) is open.</p>
+</section>
+
+<section id="conclusion">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Conclusion</h2></div>
+  <div class="grid2">
+    <div class="card"><b>What held up</b>
+      <div class="pro" style="margin-top:8px">A small tool surface plus an answer-ready view cuts tokens about 5x at equal accuracy.</div>
+      <div class="pro">Validated page maps make repeat visits about 3.5x cheaper, with a model call only once per page type.</div>
+      <div class="pro">Fail-closed checks: on a failed check the agent sees text, never a wrong value.</div>
+    </div>
+    <div class="card"><b>What did not</b>
+      <div class="con" style="margin-top:8px">Tokens are not cost. Re-sent definitions are cache reads, so a 4.8x token cut gave a 1.1x cost cut on first visits.</div>
+      <div class="con">Seconds: about 2 s slower than Playwright MCP on the main track. The project's own target is not met.</div>
+      <div class="con">With tool search on, rivals stop paying for definitions, and the gap narrows (still 1.6x cheaper).</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px"><b>The one-sentence conclusion.</b> <span style="color:var(--g700)">For one-off reads, a lean tool surface is a modest win once caching is priced in. The durable advantage is repeat visits to the same page types, where a validated map replaces most of the model's reading.</span></div>
+  <h3>What I would do next, or differently</h3>
+  <ul style="font-size:14.5px;color:var(--g700)">
+    <li>Profile latency (settle wait, extraction) before adding features; seconds is the open target.</li>
+    <li>Run three repeats from the start so differences come with error bars.</li>
+    <li>Measure maps on sites they were not taught on; that is the real generalisation test.</li>
+    <li>Test number and date parsing against a corpus of real formats earlier; the hex.pm bug was avoidable.</li>
+  </ul>
+</section>
+
+<section id="concepts">
+  <div class="sec-head"><span class="sec-num">07</span><h2>Concepts and architectures used</h2></div>
+  <p class="lead">Each card: what it is, where it lives in the code, why it was chosen, what was passed over, and where to learn it.</p>
+  <div class="filter" role="group" aria-label="Filter concepts">
+    <button aria-pressed="true" data-f="all">All</button><button aria-pressed="false" data-f="ai">AI and LLMs</button><button aria-pressed="false" data-f="web">Browser and web</button><button aria-pressed="false" data-f="arch">Architecture</button><button aria-pressed="false" data-f="sec">Security</button><button aria-pressed="false" data-f="eval">Testing and evaluation</button>
+  </div>
+  <div class="grid2" id="concepts-grid">
+
+    <div class="card concept" data-c="ai"><span class="kind">AI · protocol</span><h4>Model Context Protocol (MCP)</h4><dl>
+      <dt>What</dt><dd>An open protocol for giving models tools. A client (Claude Code) talks to a server (pagebrief) over JSON-RPC 2.0, here on stdio. The server lists tools with JSON-schema inputs; the model calls them.</dd>
+      <dt>Where</dt><dd><code>src/mcp.ts</code>, official TypeScript SDK</dd>
+      <dt>Why</dt><dd>Any MCP client can use it unchanged; the SDK handles version negotiation.</dd>
+      <dt>Not</dt><dd>A hand-written JSON-RPC server, or a client-specific plugin.</dd></dl>
+      <div class="learn"><a href="https://modelcontextprotocol.io">modelcontextprotocol.io</a> · <a href="https://www.jsonrpc.org/specification">JSON-RPC 2.0 spec</a></div></div>
+
+    <div class="card concept" data-c="ai"><span class="kind">AI · cost</span><h4>Token economics and prompt caching</h4><dl>
+      <dt>What</dt><dd>Every turn re-sends the system prompt and all tool definitions. Prompt caching bills repeated prefixes as cheap cache reads. Tool search loads definitions only when needed.</dd>
+      <dt>Where</dt><dd><code>bench/src/claude-runner.ts</code> (<code>ENABLE_TOOL_SEARCH</code>), report cost columns</dd>
+      <dt>Why</dt><dd>Explains the central result: 4.8x fewer tokens but 1.1x lower cost.</dd>
+      <dt>Not</dt><dd>Reporting tokens alone, which overstates the win.</dd></dl>
+      <div class="learn"><a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching">Anthropic: prompt caching</a></div></div>
+
+    <div class="card concept" data-c="ai"><span class="kind">AI · agents</span><h4>Tool design for agents</h4><dl>
+      <dt>What</dt><dd>Few tools, short descriptions, results the model can act on immediately, so tasks take fewer turns.</dd>
+      <dt>Where</dt><dd>Tool descriptions in <code>src/mcp.ts</code>; the view in <code>src/page/view.ts</code></dd>
+      <dt>Why</dt><dd>Turns multiply cost: each one re-sends the definitions.</dd>
+      <dt>Not</dt><dd>A full browser API of 25 to 29 tools.</dd></dl>
+      <div class="learn"><a href="https://www.anthropic.com/engineering/writing-tools-for-agents">Anthropic: writing tools for agents</a> · <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a></div></div>
+
+    <div class="card concept" data-c="ai"><span class="kind">AI · learning</span><h4>Teacher and student, knowledge distillation</h4><dl>
+      <dt>What</dt><dd>A large model labels examples once; a small model learns or follows them. Here the teacher writes maps; the student only repairs broken ones.</dd>
+      <dt>Where</dt><dd><code>src/maps/teacher.ts</code>, <code>student.ts</code>, <code>bench/src/export-sft.ts</code></dd>
+      <dt>Why</dt><dd>Expensive model once per page type, cheap code every load.</dd>
+      <dt>Honesty</dt><dd>The student is prompted, not fine-tuned, so it is not called "distilled". The SFT exporter exists; no training has run.</dd></dl>
+      <div class="learn"><a href="https://arxiv.org/abs/1503.02531">Hinton et al., Distilling the Knowledge in a Neural Network</a></div></div>
+
+    <div class="card concept" data-c="ai"><span class="kind">AI · fine-tuning</span><h4>SFT, LoRA, GGUF, Ollama</h4><dl>
+      <dt>What</dt><dd>Supervised fine-tuning on chat examples; LoRA trains small adapter matrices instead of all weights; GGUF is a file format for running quantised models locally in Ollama.</dd>
+      <dt>Where</dt><dd><code>docs/finetune.md</code> (plan), <code>src/maps/llm.ts</code> (Ollama client)</dd>
+      <dt>Why</dt><dd>A local small student would make repairs free and private.</dd>
+      <dt>Status</dt><dd>Not run: needs a GPU and a few hundred pages.</dd></dl>
+      <div class="learn"><a href="https://arxiv.org/abs/2106.09685">LoRA paper</a> · <a href="https://huggingface.co/docs/trl/sft_trainer">TRL SFTTrainer</a> · <a href="https://ollama.com">Ollama</a></div></div>
+
+    <div class="card concept" data-c="web"><span class="kind">Browser · protocol</span><h4>Chrome DevTools Protocol (CDP)</h4><dl>
+      <dt>What</dt><dd>The JSON-over-WebSocket protocol that DevTools, Puppeteer and Playwright use underneath. Organised in domains: Page, Network, Runtime, Target.</dd>
+      <dt>Where</dt><dd><code>src/cdp/connection.ts</code>, <code>src/browser.ts</code></dd>
+      <dt>Why</dt><dd>Direct Network-domain access to capture the page's JSON; no <code>Runtime.enable</code> (a known automation fingerprint); any CDP engine can replace Chrome.</dd>
+      <dt>Not</dt><dd>Playwright or Puppeteer in the product (kept only as baselines, so the comparison is fair).</dd></dl>
+      <div class="learn"><a href="https://chromedevtools.github.io/devtools-protocol/">CDP reference</a> · <a href="https://pptr.dev">Puppeteer docs</a> (to see what it wraps)</div></div>
+
+    <div class="card concept" data-c="web"><span class="kind">Browser · transport</span><h4>WebSockets in Node</h4><dl>
+      <dt>What</dt><dd>A full-duplex connection over one TCP socket. CDP messages carry an id; responses match by id, events have none.</dd>
+      <dt>Where</dt><dd><code>src/cdp/connection.ts</code>, about 80 lines</dd>
+      <dt>Why</dt><dd>Node 22+ ships a standard WebSocket client, so no <code>ws</code> dependency.</dd>
+      <dt>Concept</dt><dd>Request/response correlation and event dispatch over one channel.</dd></dl>
+      <div class="learn"><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket">MDN: WebSocket</a> · <a href="https://nodejs.org/api/globals.html#websocket">Node globals</a></div></div>
+
+    <div class="card concept" data-c="web"><span class="kind">Browser · content</span><h4>Page representation</h4><dl>
+      <dt>What</dt><dd><code>innerText</code> (rendered text only) versus <code>textContent</code> (all text, hidden too) versus the accessibility tree versus screenshots.</dd>
+      <dt>Where</dt><dd><code>src/page/extract-script.ts</code></dd>
+      <dt>Why</dt><dd>Rendered text with structured data is short and answer-ready; snapshots are verbose, screenshots cost vision tokens.</dd>
+      <dt>Trade-off</dt><dd>Text hidden by opacity or off-screen positioning still gets through.</dd></dl>
+      <div class="learn"><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/innerText">MDN: innerText</a> · <a href="https://developer.mozilla.org/en-US/docs/Glossary/Accessibility_tree">MDN: accessibility tree</a></div></div>
+
+    <div class="card concept" data-c="web"><span class="kind">Web · data</span><h4>Structured data and captured JSON</h4><dl>
+      <dt>What</dt><dd>JSON-LD (schema.org) blocks, meta tags, and the XHR/fetch JSON a single-page app loads before it renders.</dd>
+      <dt>Where</dt><dd><code>src/page/json-rank.ts</code>, map locations <code>json</code>, <code>jsonld</code>, <code>meta</code></dd>
+      <dt>Why</dt><dd>That data is already typed; reading it beats scraping markup.</dd>
+      <dt>Detail</dt><dd>Responses ranked own-site first, analytics last; 2 MB cap after decoding.</dd></dl>
+      <div class="learn"><a href="https://json-ld.org/">json-ld.org</a> · <a href="https://schema.org">schema.org</a></div></div>
+
+    <div class="card concept" data-c="web"><span class="kind">Web · extraction</span><h4>Wrapper induction (what a page map is)</h4><dl>
+      <dt>What</dt><dd>A classic data-extraction idea: learn a "wrapper" that pulls fields from every page generated by the same template. Page maps are wrappers written by an LLM and checked by code.</dd>
+      <dt>Where</dt><dd><code>src/maps/</code>: <code>types.ts</code>, <code>pattern.ts</code>, <code>apply.ts</code></dd>
+      <dt>Why</dt><dd>Sites render many pages from one template; one map covers them all via a URL pattern.</dd>
+      <dt>Risk</dt><dd>Wrappers break on redesigns and A/B tests, hence checks and repair.</dd></dl>
+      <div class="learn"><a href="https://en.wikipedia.org/wiki/Wrapper_(data_mining)">Wikipedia: Wrapper (data mining)</a></div></div>
+
+    <div class="card concept" data-c="arch"><span class="kind">Architecture</span><h4>Ports and adapters</h4><dl>
+      <dt>What</dt><dd>Keep the core independent of its edges: define an interface (port), plug implementations (adapters) into it.</dd>
+      <dt>Where</dt><dd>The agent-facing MCP surface; the <code>Llm</code> interface (Claude CLI or Ollama); CDP launch or <code>--cdp-url</code></dd>
+      <dt>Why</dt><dd>Swap Chrome for Lightpanda, or Claude for a local model, without touching the agent surface.</dd>
+      <dt>Not</dt><dd>Hard-wiring one browser and one model.</dd></dl>
+      <div class="learn"><a href="https://alistair.cockburn.us/hexagonal-architecture/">Alistair Cockburn: Hexagonal architecture</a></div></div>
+
+    <div class="card concept" data-c="arch"><span class="kind">Architecture</span><h4>Functional core, imperative shell</h4><dl>
+      <dt>What</dt><dd>Put decisions in pure functions (input → output, no I/O); keep side effects in a thin outer layer.</dd>
+      <dt>Where</dt><dd><code>src/page/view.ts</code> and <code>src/maps/apply.ts</code> are pure; <code>browser.ts</code> does the I/O</dd>
+      <dt>Why</dt><dd>The rendering and checking logic is unit-tested without a browser.</dd></dl>
+      <div class="learn"><a href="https://www.destroyallsoftware.com/talks/boundaries">Gary Bernhardt: Boundaries</a></div></div>
+
+    <div class="card concept" data-c="arch"><span class="kind">Architecture</span><h4>Fail-closed validation with schemas</h4><dl>
+      <dt>What</dt><dd>When unsure, refuse rather than guess. Maps are zod schemas (a discriminated union for locations); every field is read, typed and shape-checked on every load.</dd>
+      <dt>Where</dt><dd><code>src/maps/types.ts</code>, <code>applyMap()</code></dd>
+      <dt>Why</dt><dd>An agent trusts a typed value; a wrong one is worse than a longer text view.</dd>
+      <dt>Lesson</dt><dd>Type checks alone passed the hex.pm "168" bug; parsers need real-format tests.</dd></dl>
+      <div class="learn"><a href="https://zod.dev">zod.dev</a></div></div>
+
+    <div class="card concept" data-c="arch"><span class="kind">Architecture · concurrency</span><h4>Serialised work queue</h4><dl>
+      <dt>What</dt><dd>Run operations on a shared resource one at a time, in order, like a mutex.</dd>
+      <dt>Where</dt><dd><code>src/engine.ts</code>: opens queued; last 5 pages kept so <code>find</code>/<code>read</code> can name a page</dd>
+      <dt>Why</dt><dd>Agents send tool calls in parallel; a shared tab raced and returned the wrong page.</dd>
+      <dt>Not</dt><dd>A tab per call (more memory, more state to clean up).</dd></dl>
+      <div class="learn"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop">MDN: the event loop</a></div></div>
+
+    <div class="card concept" data-c="sec"><span class="kind">Security</span><h4>SSRF and the private-network guard</h4><dl>
+      <dt>What</dt><dd>Server-side request forgery: tricking a server into fetching internal addresses (localhost, 10.x, 169.254.169.254 cloud metadata).</dd>
+      <dt>Where</dt><dd><code>src/net/guard.ts</code></dd>
+      <dt>How</dt><dd>Refuse private ranges in IPv4, IPv6 and mapped forms, numeric disguises, names that resolve inward; check every redirect hop and the connected address.</dd>
+      <dt>Limit</dt><dd>Behind a proxy Chrome reports the proxy's address, so that check is off there.</dd></dl>
+      <div class="learn"><a href="https://owasp.org/www-community/attacks/Server_Side_Request_Forgery">OWASP: SSRF</a> · <a href="https://www.rfc-editor.org/rfc/rfc1918">RFC 1918</a></div></div>
+
+    <div class="card concept" data-c="sec"><span class="kind">Security</span><h4>Prompt injection and untrusted content</h4><dl>
+      <dt>What</dt><dd>Text on a page that tries to instruct the agent. The model can't reliably tell data from instructions.</dd>
+      <dt>Where</dt><dd>Invisible-text drop in extraction; bot-check and login-wall reports in <code>view.ts</code></dd>
+      <dt>Stance</dt><dd>Reduced, not solved: everything returned is untrusted page content, and the README says so.</dd></dl>
+      <div class="learn"><a href="https://simonwillison.net/series/prompt-injection/">Simon Willison: prompt injection series</a></div></div>
+
+    <div class="card concept" data-c="sec"><span class="kind">Security</span><h4>ReDoS (regex denial of service)</h4><dl>
+      <dt>What</dt><dd>Nested quantifiers like <code>(a+)+</code> can take exponential time on certain inputs.</dd>
+      <dt>Where</dt><dd><code>unsafeRegex()</code> in <code>apply.ts</code>; a 2 s search cap and 300-character pattern limit in <code>find</code></dd>
+      <dt>Why</dt><dd>Maps and agents supply regexes; a long page must not stall the server.</dd></dl>
+      <div class="learn"><a href="https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS">OWASP: ReDoS</a></div></div>
+
+    <div class="card concept" data-c="sec"><span class="kind">Security</span><h4>Least privilege for actions</h4><dl>
+      <dt>What</dt><dd>Give an agent the lowest power that does the job. Actions are classified read, write or dangerous, and a policy caps the level.</dd>
+      <dt>Where</dt><dd><code>src/actions/risk.ts</code></dd>
+      <dt>Hard limits</dt><dd>Never types into password fields, never uploads files, whatever the policy.</dd>
+      <dt>Caveat</dt><dd>Labels come from words on the element: a guard and advice, not a guarantee.</dd></dl>
+      <div class="learn"><a href="https://en.wikipedia.org/wiki/Principle_of_least_privilege">Principle of least privilege</a></div></div>
+
+    <div class="card concept" data-c="eval"><span class="kind">Evaluation</span><h4>Benchmark methodology</h4><dl>
+      <dt>What</dt><dd>Fixed tasks with a verified answer key; same agent, model and settings per tool; medians (robust to outliers) over means; interleaved tool order so a stopped run stays balanced.</dd>
+      <dt>Where</dt><dd><code>bench/</code>: tasks, runner, scorer, report, campaign driver</dd>
+      <dt>Rigor</dt><dd>Engine version and a hash of the maps are recorded; <code>--resume</code> refuses to mix versions. Runs answering without a tool call are scored wrong.</dd>
+      <dt>Gaps</dt><dd>One repeat; friendly sites only; some scorer leniency under review.</dd></dl>
+      <div class="learn"><a href="https://en.wikipedia.org/wiki/Median">Median vs mean</a> · <a href="https://www.anthropic.com/engineering/building-effective-agents">agent evaluation context</a></div></div>
+
+    <div class="card concept" data-c="eval"><span class="kind">Evaluation · ops</span><h4>Rate limits, resumability, idempotence</h4><dl>
+      <dt>What</dt><dd>Long jobs must stop safely before a quota and continue later without duplicating work.</dd>
+      <dt>Where</dt><dd>Runner reads Claude Code's <code>rate_limit_event</code>; <code>bench/scripts/campaign.ts</code> waits for the window reset</dd>
+      <dt>Why</dt><dd>840 runs on a subscription; failed or limit-hit runs are not recorded, so a resume reruns exactly those.</dd></dl>
+      <div class="learn"><a href="https://docs.anthropic.com/en/docs/claude-code/overview">Claude Code docs</a></div></div>
+
+    <div class="card concept" data-c="eval"><span class="kind">Testing</span><h4>Test pyramid and CI</h4><dl>
+      <dt>What</dt><dd>Many fast unit tests (pure functions), some end-to-end tests against real headless Chrome and a local HTTP server, plus a packaging test.</dd>
+      <dt>Where</dt><dd><code>*.test.ts</code> with <code>node:test</code>; <code>.github/workflows/ci.yml</code> on Ubuntu and Windows</dd>
+      <dt>Why node:test</dt><dd>No config or extra dependencies; vitest 5.1.0's peer dependencies broke install.</dd>
+      <dt>Tarball</dt><dd>Installing the packed package catches files missing from the published bundle.</dd></dl>
+      <div class="learn"><a href="https://nodejs.org/api/test.html">Node test runner</a> · <a href="https://docs.github.com/actions">GitHub Actions</a></div></div>
+  </div>
+</section>
+
+<section id="decisions">
+  <div class="sec-head"><span class="sec-num">08</span><h2>Decisions and why</h2></div>
+  <p class="lead">The question behind most interview follow-ups is "why X and not Y?". These are the answers.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Decision</th><th>Chosen</th><th>Instead of</th><th>Why</th></tr>
+    <tr><td>Order of work</td><td>Benchmark first</td><td>Build, then measure</td><td>The first measurement showed cost was tool definitions, which shaped the whole design.</td></tr>
+    <tr><td>Browser control</td><td>Raw CDP</td><td>Playwright / Puppeteer</td><td>Network-domain JSON capture, fewer fingerprints, swappable engine, no bundled browser.</td></tr>
+    <tr><td>Browser binary</td><td>Installed Chrome</td><td>Pinned Chromium download</td><td>No 150 MB install; baselines use the same Chrome, so comparisons are fair.</td></tr>
+    <tr><td>Tool surface</td><td>3 read tools (+ opt-in <code>do</code>)</td><td>25–29 tools</td><td>Definitions are re-sent every turn.</td></tr>
+    <tr><td>Data source order</td><td>WebMCP → page JSON → forms/text → model</td><td>DOM scraping only</td><td>Prefer data that is already typed; use a model only as a last resort.</td></tr>
+    <tr><td>Repeat visits</td><td>LLM-written maps, code-checked</td><td>A model on every load</td><td>Model cost once per page type; deterministic and cheap afterwards.</td></tr>
+    <tr><td>On a failed check</td><td>Show text, never the value</td><td>Best-effort value</td><td>A confident wrong answer is the worst outcome for an agent.</td></tr>
+    <tr><td>Scope</td><td>Read-only by default</td><td>Clicks and logins from day one</td><td>Prove reading first; actions are opt-in with risk caps.</td></tr>
+    <tr><td>Map storage</td><td>Local <code>~/.pagebrief/maps</code>, explicit export</td><td>A shared cloud store</td><td>A shared store is a trust problem: a poisoned map could mislabel actions.</td></tr>
+    <tr><td>Models</td><td><code>claude -p</code> on a subscription, or Ollama</td><td>API key and SDK</td><td>The owner's constraint: no API key. The Llm interface keeps this swappable.</td></tr>
+    <tr><td>Benchmark agent</td><td>Headless Claude Code, context stripped</td><td>Custom agent loop</td><td>A real harness; 761 tokens of fixed overhead, so token counts reflect the tool.</td></tr>
+    <tr><td>Benchmark sites</td><td>Sandboxes, versioned pages, Wayback snapshots</td><td>Popular live sites</td><td>Answers must not drift; pages must not block bots.</td></tr>
+  </table></div>
+</section>
+
+<section id="interview">
+  <div class="sec-head"><span class="sec-num">09</span><h2>Likely interview questions</h2></div>
+  <p class="lead">Open each one, try answering aloud first, then compare.</p>
+  <details><summary>Why not just use Playwright MCP?</summary><div class="body"><p>It works, and it scored 100% too. But it exposes a whole browser API, and its definitions and accessibility snapshots make a median task about 26k tokens. For reading tasks, an answer-ready view in one call does the same job with about 5k. Playwright stays in the project as the baseline to beat.</p></div></details>
+  <details><summary>Your tokens dropped 4.8x but cost only 1.1x. Why?</summary><div class="body"><p>Prompt caching. Tool definitions are the same every turn, so after the first turn they are billed as cache reads at roughly a tenth of the input price. The tokens I removed were mostly cheap tokens. That is why I report cost first and tokens second, and why the real win is repeat visits, where maps remove the expensive reading work.</p></div></details>
+  <details><summary>You are slower than Playwright MCP. Isn't that a failure?</summary><div class="body"><p>Against my own target, yes, and I say so. The likely causes are the network-quiet wait after load and doing a full extraction on open. The next step is profiling those rather than guessing. On repeat visits with maps, speed is level (8.4 s vs 8.5 s).</p></div></details>
+  <details><summary>What is a page map and how do you trust it?</summary><div class="body"><p>A JSON document saying, for one page type (host plus URL pattern), where each named field lives: a JSON path, JSON-LD, a meta tag, or a label-anchored regex. A large model writes it once. On every load, plain code reads each field and checks its type and shape. If any check fails, the agent gets the text view instead. An optional field missing 3 loads in a row is treated as a broken location, because a broken location looks the same as a page that lacks the field.</p></div></details>
+  <details><summary>Tell me about a bug you found.</summary><div class="body"><p>hex.pm prints "168 360" with a space as the thousands separator. The number parser stopped at the space and returned 168, which passed both the integer type check and the shape check. So the checks were technically satisfied by a wrong value. I rewrote the parser to group space, non-breaking and thin-space separators followed by three digits, handled European "1.234,56", made sure "v1.2.3" is not a number, added tests for each, and re-taught the maps. The lesson was that validation needs realistic inputs, not just type checks.</p></div></details>
+  <details><summary>How do you stop the agent from being used to attack internal networks?</summary><div class="body"><p>An SSRF guard: before navigating, the hostname is resolved and private, loopback, link-local and carrier-NAT ranges are refused in every form, including numeric disguises like <code>http://2130706433</code>. Every redirect hop is checked, and when there's no proxy, the address Chrome actually connected to. It is opt-in to allow private addresses for local development.</p></div></details>
+  <details><summary>How did you make the benchmark fair?</summary><div class="body"><p>Same tasks, model, effort and harness for every tool; a verified answer key; tool order interleaved per repeat so an early stop is still balanced; a shared working directory so the prompt cache treats tools alike; runs that answer without browsing are scored wrong; versions and map hashes recorded so results are never mixed. Known gaps: one repeat, friendly sites, and a plain-fetch scoring question I'm checking.</p></div></details>
+  <details><summary>Why raw CDP instead of Puppeteer?</summary><div class="body"><p>Three reasons: I need the Network domain to capture the JSON the page loads, which is central to the typed view; avoiding <code>Runtime.enable</code> removes a common automation fingerprint; and keeping the product on the protocol means any CDP engine (Lightpanda, for example) can replace Chrome via <code>--cdp-url</code>. The CDP client is about 80 lines on Node's built-in WebSocket.</p></div></details>
+  <details><summary>Is the small model "distilled"?</summary><div class="body"><p>No, and I'm careful about that word. It is a small model prompted to repair maps. The data pipeline for fine-tuning on the teacher's verified labels exists (SFT export, held-out-by-site plan, LoRA), but no model has been trained. Until one is, calling it distilled would be inaccurate.</p></div></details>
+  <details><summary>What would you change if you started again?</summary><div class="body"><p>Three repeats from day one for error bars, latency profiling alongside token counts, a real-format corpus for number and date parsing, and a held-out set of unseen sites for the maps.</p></div></details>
+</section>
+
+<section id="quiz">
+  <div class="sec-head"><span class="sec-num">10</span><h2>Self-quiz</h2></div>
+  <p class="lead">Check you can explain it before someone asks. <span class="score" id="score">0 / 6</span></p>
+  <div class="card" id="quizbox"></div>
+</section>
+
+<section id="glossary">
+  <div class="sec-head"><span class="sec-num">11</span><h2>Glossary</h2></div>
+  <dl class="glossary">
+    <dt>Agent</dt><dd>A model that decides which tools to call, in a loop, to finish a task.</dd>
+    <dt>MCP server / client</dt><dd>The server offers tools; the client (Claude Code, Cursor) lets a model call them.</dd>
+    <dt>Tool definition</dt><dd>The name, description and input schema of a tool, sent to the model so it knows how to call it.</dd>
+    <dt>Turn</dt><dd>One model response plus the tool results fed back. Each turn re-sends the context.</dd>
+    <dt>Prompt cache</dt><dd>Reuse of an identical prompt prefix across requests, billed at a lower rate.</dd>
+    <dt>Tool search</dt><dd>Loading tool definitions only when the model asks for them.</dd>
+    <dt>CDP</dt><dd>Chrome DevTools Protocol: JSON messages over WebSocket to control the browser.</dd>
+    <dt>Headless</dt><dd>A browser running without a visible window.</dd>
+    <dt>Network quiet</dt><dd>Treating a page as loaded when no requests are pending for 500 ms (capped at 5 s).</dd>
+    <dt>JSON-LD</dt><dd>Structured data (schema.org vocabulary) embedded in a page for search engines.</dd>
+    <dt>Page map</dt><dd>Where each named field lives on one page type, keyed by host and URL pattern.</dd>
+    <dt>Teacher / checker / student / grader</dt><dd>Writes maps / validates them every load / repairs them / labels failures offline.</dd>
+    <dt>Fail closed</dt><dd>On doubt, refuse or fall back rather than guess.</dd>
+    <dt>SSRF</dt><dd>Server-side request forgery: making a server fetch internal addresses.</dd>
+    <dt>ReDoS</dt><dd>A regex that takes exponential time on crafted input.</dd>
+    <dt>Baseline</dt><dd>The tool every other is compared against (Playwright MCP here).</dd>
+    <dt>Median</dt><dd>The middle value; less affected by a few extreme runs than the mean.</dd>
+    <dt>SFT / LoRA</dt><dd>Supervised fine-tuning / a cheap fine-tuning method that trains small adapter weights.</dd>
+  </dl>
+</section>
+
+<section id="resources">
+  <div class="sec-head"><span class="sec-num">12</span><h2>Resources to learn from</h2></div>
+  <p class="lead">Grouped by topic, roughly in reading order. Start with the first link in each group.</p>
+  <div class="grid2">
+    <div class="card res-group"><h4>MCP and agent tools</h4><ul>
+      <li><a href="https://modelcontextprotocol.io">Model Context Protocol</a> <span>spec, concepts, tutorials</span></li>
+      <li><a href="https://github.com/modelcontextprotocol/typescript-sdk">MCP TypeScript SDK</a> <span>what <code>src/mcp.ts</code> uses</span></li>
+      <li><a href="https://www.anthropic.com/engineering/writing-tools-for-agents">Writing effective tools for agents</a> <span>Anthropic engineering</span></li>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a> <span>Anthropic engineering</span></li>
+      <li><a href="https://www.jsonrpc.org/specification">JSON-RPC 2.0</a> <span>the wire format under MCP</span></li>
+    </ul></div>
+    <div class="card res-group"><h4>LLM cost and Claude</h4><ul>
+      <li><a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching">Prompt caching</a> <span>why tokens are not cost</span></li>
+      <li><a href="https://docs.anthropic.com/en/docs/claude-code/overview">Claude Code</a> <span>the benchmark harness, headless mode</span></li>
+      <li><a href="https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview">Tool use with Claude</a> <span>how definitions reach the model</span></li>
+    </ul></div>
+    <div class="card res-group"><h4>Browsers and the web platform</h4><ul>
+      <li><a href="https://chromedevtools.github.io/devtools-protocol/">Chrome DevTools Protocol</a> <span>Page, Network, Runtime domains</span></li>
+      <li><a href="https://github.com/aslushnikov/getting-started-with-cdp">Getting started with CDP</a> <span>a short hands-on intro</span></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket">MDN: WebSocket</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/innerText">MDN: innerText vs textContent</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Accessibility_tree">MDN: accessibility tree</a></li>
+      <li><a href="https://json-ld.org/">JSON-LD</a> and <a href="https://schema.org">schema.org</a></li>
+    </ul></div>
+    <div class="card res-group"><h4>Alternatives and prior art</h4><ul>
+      <li><a href="https://github.com/microsoft/playwright-mcp">Playwright MCP</a> <span>the baseline</span></li>
+      <li><a href="https://github.com/vercel-labs/agent-browser">agent-browser</a> <span>Vercel's browser for agents</span></li>
+      <li><a href="https://github.com/lightpanda-io/browser">Lightpanda</a> <span>a lightweight CDP browser</span></li>
+      <li><a href="https://github.com/webmachinelearning/webmcp">WebMCP</a> <span>sites declaring tools for agents</span></li>
+      <li><a href="https://jina.ai/reader/">Jina Reader</a>, <a href="https://www.firecrawl.dev">Firecrawl</a> <span>page-to-text services</span></li>
+      <li><a href="https://en.wikipedia.org/wiki/Wrapper_(data_mining)">Wrapper induction</a> <span>the classic idea behind maps</span></li>
+    </ul></div>
+    <div class="card res-group"><h4>Security</h4><ul>
+      <li><a href="https://owasp.org/www-community/attacks/Server_Side_Request_Forgery">OWASP: SSRF</a></li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html">OWASP SSRF prevention cheat sheet</a></li>
+      <li><a href="https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS">OWASP: ReDoS</a></li>
+      <li><a href="https://simonwillison.net/series/prompt-injection/">Prompt injection series</a> <span>Simon Willison</span></li>
+      <li><a href="https://www.rfc-editor.org/rfc/rfc1918">RFC 1918</a> <span>private address ranges</span></li>
+    </ul></div>
+    <div class="card res-group"><h4>Architecture, testing, ML</h4><ul>
+      <li><a href="https://alistair.cockburn.us/hexagonal-architecture/">Hexagonal architecture</a> <span>ports and adapters</span></li>
+      <li><a href="https://www.destroyallsoftware.com/talks/boundaries">Boundaries</a> <span>functional core, imperative shell</span></li>
+      <li><a href="https://zod.dev">zod</a> <span>runtime schemas in TypeScript</span></li>
+      <li><a href="https://nodejs.org/api/test.html">Node test runner</a> · <a href="https://docs.github.com/actions">GitHub Actions</a></li>
+      <li><a href="https://arxiv.org/abs/1503.02531">Distilling the Knowledge in a Neural Network</a> · <a href="https://arxiv.org/abs/2106.09685">LoRA</a></li>
+      <li><a href="https://huggingface.co/docs/trl/sft_trainer">TRL SFTTrainer</a> · <a href="https://github.com/unslothai/unsloth">Unsloth</a> · <a href="https://ollama.com">Ollama</a></li>
+    </ul></div>
+  </div>
+  <h3>Inside this repo</h3>
+  <div class="chips" style="margin-top:0">
+    <span class="chip tag">README.md · results and decisions</span><span class="chip tag">docs/spec.md · product spec</span><span class="chip tag">docs/walkthrough-new.html · code tour</span><span class="chip tag">docs/finetune.md · fine-tuning plan</span><span class="chip tag">docs/results/ · raw reports</span>
+  </div>
+</section>
+
+<footer>Figures come from the benchmark reports in <code>docs/results/</code> (runs on 2026-11-09 and 2026-11-11/12) and the repository history. External links point to the official or original source for each topic.</footer>
+</main>
+
+<nav class="toc" aria-label="On this page">
+  <div class="lbl">On this page</div>
+  <a href="#pitch">Pitch</a><a href="#what">What it does</a><a href="#arch">Architecture</a><a href="#journey">How we got here</a><a href="#results">Results</a><a href="#conclusion">Conclusion</a><a href="#concepts">Concepts</a><a href="#decisions">Decisions</a><a href="#interview">Interview Q&amp;A</a><a href="#quiz">Self-quiz</a><a href="#glossary">Glossary</a><a href="#resources">Resources</a>
+</nav>
+</div>
+
+<script>
+// concept filter
+document.querySelectorAll('.filter button').forEach(b=>b.onclick=()=>{
+  const f=b.dataset.f;
+  document.querySelectorAll('.filter button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  document.querySelectorAll('#concepts-grid .concept').forEach(c=>{c.style.display=(f==='all'||c.dataset.c===f)?'':'none';});
+});
+
+// copy pitch
+document.getElementById('copyPitch').onclick=async e=>{
+  const t=['p10','p30','p2'].map(id=>document.getElementById(id).innerText).join('\n\n');
+  try{await navigator.clipboard.writeText(t);e.target.textContent='Copied';}catch{e.target.textContent='Select the text to copy';}
+  setTimeout(()=>e.target.textContent='Copy all three',1500);
+};
+
+// self-quiz
+const Q=[
+ {q:'Where did most of a Playwright MCP task\'s tokens go in the first measurement?',o:['Page content','Tool definitions re-sent every turn','The model\'s reasoning','Screenshots'],a:1,e:'About 8k tokens of definitions per turn; only about 2k characters of a 26k-token task was page content.'},
+ {q:'Why did 4.8x fewer tokens give only 1.1x lower cost?',o:['The model was more expensive','Re-sent definitions are cheap prompt-cache reads','pagebrief made more calls','Output tokens dominated'],a:1,e:'Cached prefix tokens are billed at roughly a tenth of the input price, so the removed tokens were mostly cheap ones.'},
+ {q:'What happens when one field of a page map fails its check?',o:['The field is shown as null','The model guesses the value','The agent gets the text view instead','The map is deleted'],a:2,e:'Fail closed: a wrong typed value is never shown.'},
+ {q:'Why raw CDP instead of Playwright in the product?',o:['Playwright is slower to install','Network-domain JSON capture, fewer fingerprints, swappable engine','Playwright cannot run headless','CDP is required by MCP'],a:1,e:'Plus no bundled browser; Playwright is kept as the baseline so the comparison is fair.'},
+ {q:'What did the hex.pm bug teach?',o:['Regexes are always unsafe','Type checks can pass a wrong value; parsers need real-format tests','JSON-LD is unreliable','Maps should not use text locations'],a:1,e:'"168 360" was read as 168, a valid integer, so every check passed.'},
+ {q:'What does the SSRF guard protect against?',o:['Pages loading too slowly','An agent being steered to localhost or cloud metadata addresses','Bot checks','Prompt caching misses'],a:1,e:'Private, loopback, link-local and carrier-NAT ranges are refused, including redirects and numeric disguises.'}
+];
+const box=document.getElementById('quizbox');let score=0;
+Q.forEach((it,i)=>{
+  const d=document.createElement('div');d.className='quiz-q';
+  d.innerHTML='<p>'+(i+1)+'. '+it.q+'</p><div class="opts"></div><div class="explain">'+it.e+'</div>';
+  const opts=d.querySelector('.opts');
+  it.o.forEach((o,j)=>{const b=document.createElement('button');b.type='button';b.textContent=o;
+    b.onclick=()=>{if(d.classList.contains('done'))return;d.classList.add('done');
+      b.classList.add(j===it.a?'right':'wrong');opts.children[it.a].classList.add('right');
+      if(j===it.a)score++;document.getElementById('score').textContent=score+' / '+Q.length;};
+    opts.appendChild(b);});
+  box.appendChild(d);
+});
+
+// scrollspy
+const links=[...document.querySelectorAll('.toc a')];
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(l=>l.classList.toggle('on',l.getAttribute('href')==='#'+e.target.id));}),{rootMargin:'-20% 0px -70% 0px'});
+links.forEach(a=>{const s=document.querySelector(a.getAttribute('href'));if(s)io.observe(s);});
+</script>
+</body>
+</html>

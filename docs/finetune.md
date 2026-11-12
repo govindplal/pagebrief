@@ -17,7 +17,7 @@ A page map is written once by a large model (the teacher) and repaired, when a s
 
 ## Steps
 
-1. **Collect pages.** The fine-tuning set needs a few hundred pages across many sites and page types, with the benchmark's pages held out. The 66 pages in `bench/tasks-repeat.json` are a start and an evaluation set, not enough to train on. Put more URLs, one per line, in a file.
+1. **Collect pages.** The fine-tuning set needs a few hundred pages across many sites and page types, with the benchmark's pages held out. The 66 pages in `bench/tasks-repeat.json` (6 pages the maps were taught on, plus 60 task pages) are a start and an evaluation set, not enough to train on. On them the taught maps check out on 59 of 60 task pages (`docs/results/2026-11-11-map-eval.json`). Put more URLs, one per line, in a file.
 2. **Export.** `npm run bench:sft -- --urls urls.txt --out data/sft.jsonl --teacher claude-opus-5-5`. Each line is `{messages: [system, user, assistant], meta}` (the common chat format). Pages that fail to load or whose map does not check out are skipped.
 3. **Hold out sites.** Split by site, not by page: a model that has seen one book page and is tested on another book page of the same site has not shown it can map a new site.
 4. **Train.** LoRA on a small instruction model (for example Gemma 3 4B) with Unsloth or TRL's `SFTTrainer`, on a machine with a GPU. The exact command depends on the library version; the input is `data/sft.jsonl` with the chat template of the base model.

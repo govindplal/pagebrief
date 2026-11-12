@@ -151,7 +151,7 @@ Limits:
 
 ## Benchmark
 
-60 reading tasks on 20 public sites (3 per site), with answer keys in [`bench/tasks.json`](bench/tasks.json) (main), and [`bench/tasks-repeat.json`](bench/tasks-repeat.json) (60 pages for the repeat-visit track). Each run gives one headless Claude Code agent one task and only the tool under test, mounted as an MCP server named `browser`. An answer without a tool call is scored wrong.
+60 reading tasks on 20 public sites (3 per site), with answer keys in [`bench/tasks.json`](bench/tasks.json) (main), and [`bench/tasks-repeat.json`](bench/tasks-repeat.json) (the repeat-visit track: 60 tasks, plus 6 pages the maps were taught on). Each run gives one headless Claude Code agent one task and only the tool under test, mounted as an MCP server named `browser`. An answer without a tool call is scored wrong.
 
 ```bash
 npm run bench -- --tool playwright-mcp,plain-fetch,pagebrief --concurrency 2   # all tasks
