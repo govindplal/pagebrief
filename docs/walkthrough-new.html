@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pagebrief — code walkthrough</title>
+<style>
+  :root {
+    --ivory:#FAF9F5; --paper:#FFFFFF; --slate:#141413; --clay:#D97757; --clay-d:#B85C3E;
+    --oat:#E3DACC; --olive:#788C5D; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5; --g500:#87867F; --g700:#3D3D3A;
+    --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:var(--ivory); color:var(--slate); font-family:var(--sans); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  a { color:var(--clay-d); text-decoration-color:var(--oat); text-underline-offset:3px; }
+  a:hover { text-decoration-color:var(--clay); }
+  code, .mono { font-family:var(--mono); }
+  :not(pre) > code { font-size:.86em; background:var(--g100); border:1px solid var(--g200); padding:1px 6px; border-radius:5px; }
+
+  .layout { max-width:1120px; margin:0 auto; padding:0 32px 140px; display:grid; grid-template-columns:minmax(0,1fr) 170px; gap:48px; }
+  @media (max-width: 980px) { .layout { grid-template-columns:1fr; padding:0 16px 100px; } .toc { display:none; } }
+  main { min-width:0; }
+
+  /* masthead */
+  header.masthead { padding:72px 0 44px; border-bottom:1.5px solid var(--g300); }
+  .eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--g500); margin-bottom:18px; display:flex; align-items:center; gap:12px; }
+  .eyebrow::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+  h1 { font-family:var(--serif); font-weight:500; font-size:clamp(38px,5.4vw,60px); line-height:1.06; letter-spacing:-.018em; margin:0 0 8px; max-width:17ch; }
+  h1 em { font-style:italic; color:var(--clay); }
+  .intro { font-size:16.5px; color:var(--g700); margin:22px 0 0; max-width:640px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; }
+  .chip { font-size:12.5px; padding:6px 13px; border:1.5px solid var(--g300); border-radius:999px; background:var(--paper); color:var(--g700); text-decoration:none; }
+  .chip:hover { border-color:var(--clay); color:var(--clay-d); }
+  .chip.tag { font-family:var(--mono); font-size:11.5px; padding:3px 10px; background:var(--g100); }
+
+  /* tldr */
+  .tldr { background:var(--slate); color:#F3F1EA; border-radius:14px; padding:22px 26px; margin:36px 0 0; }
+  .tldr .lbl { font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#A9A79F; margin-bottom:8px; }
+  .tldr p { margin:0; font-size:15.5px; }
+  .tldr code { background:#2a2a28; border-color:#3a3a37; color:#F3F1EA; }
+
+  /* sections */
+  section { padding-top:64px; scroll-margin-top:16px; }
+  .sec-head { display:flex; align-items:baseline; gap:14px; margin-bottom:6px; }
+  .sec-num { font-family:var(--mono); font-size:12px; color:var(--clay); }
+  h2 { font-family:var(--serif); font-weight:500; font-size:30px; letter-spacing:-.01em; margin:0; }
+  h3 { font-family:var(--serif); font-weight:500; font-size:20px; margin:32px 0 8px; }
+  .lead { color:var(--g700); max-width:680px; margin:8px 0 26px; }
+  .note { font-size:13.5px; color:var(--g500); }
+
+  /* stat cards */
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:26px 0 0; }
+  @media (max-width:720px) { .stats { grid-template-columns:repeat(2,1fr); } }
+  .stat { background:var(--paper); border:1.5px solid var(--g200); border-radius:12px; padding:16px 18px; }
+  .stat.hot { border-left:3px solid var(--clay); }
+  .stat-num { font-family:var(--serif); font-size:34px; line-height:1.1; }
+  .stat-label { font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); margin-top:4px; }
+  .stat-sub { font-family:var(--mono); font-size:11px; color:var(--g500); margin-top:6px; }
+
+  /* cards, panels */
+  .card { background:var(--paper); border:1.5px solid var(--g200); border-radius:14px; padding:20px 22px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .grid2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  @media (max-width:860px) { .grid3, .grid2 { grid-template-columns:1fr; } }
+  .approach-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .num { width:26px; height:26px; border-radius:50%; background:var(--oat); border:1.5px solid var(--g300); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:600; font-size:12px; flex:none; }
+  .approach h4 { font-family:var(--serif); font-weight:500; font-size:18px; margin:0; }
+  .approach p { font-size:14px; color:var(--g700); margin:6px 0 10px; }
+  .tradeoffs { display:flex; flex-direction:column; gap:6px; font-size:13px; }
+  .pro, .con { padding-left:20px; position:relative; }
+  .pro::before { content:"+"; position:absolute; left:4px; color:var(--olive); font-weight:700; }
+  .con::before { content:"–"; position:absolute; left:4px; color:var(--clay-d); font-weight:700; }
+  .approach.pick { border-color:var(--clay); box-shadow:0 0 0 3px rgba(217,119,87,.12); }
+
+  /* code */
+  pre { margin:0; background:#1d1d1b; color:#EDEBE3; border-radius:12px; padding:16px 18px; overflow:auto; font-size:12.8px; line-height:1.6; font-family:var(--mono); }
+  .kw { color:#C9B98A; } .str { color:#A8C58A; } .fn { color:#E8A58C; } .cm { color:#8d8b83; }
+  .codehead { font-family:var(--mono); font-size:11.5px; color:var(--g500); margin:0 0 6px; display:flex; justify-content:space-between; gap:12px; }
+
+  /* diagram + key files */
+  .split { display:grid; grid-template-columns:minmax(0,1fr) 270px; gap:28px; align-items:start; }
+  @media (max-width:900px) { .split { grid-template-columns:1fr; } }
+  .diagram { padding:10px; }
+  .diagram svg { width:100%; height:auto; display:block; }
+  svg text { font-family:var(--mono); fill:var(--slate); }
+  svg .sub { font-size:10px; fill:var(--g500); }
+  svg .lbl { font-size:10px; fill:var(--g500); }
+  svg .box { fill:var(--paper); stroke:var(--g300); stroke-width:1.5; }
+  svg .box.hot { fill:#FBEAE3; stroke:var(--clay); }
+  svg .box.cool { fill:#EEF2E8; stroke:var(--olive); }
+  svg .edge { stroke:var(--g500); stroke-width:1.4; fill:none; marker-end:url(#arrow); }
+  svg .edge.dash { stroke-dasharray:4 4; }
+  .keyfiles { list-style:none; margin:0; padding:16px 18px; font-size:12.5px; }
+  .keyfiles .lbl { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--g500); margin-bottom:10px; }
+  .keyfiles li { margin-bottom:10px; }
+  .keyfiles li code { display:block; background:none; border:none; padding:0; font-weight:600; font-size:12px; }
+  .keyfiles li span { color:var(--g500); }
+
+  /* steps */
+  .step { display:grid; grid-template-columns:44px 1fr; gap:18px; padding:20px 0; border-bottom:1.5px solid var(--g200); }
+  .step:last-child { border-bottom:none; }
+  .badge { width:34px; height:34px; border-radius:50%; background:var(--oat); border:1.5px solid var(--g300); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:600; font-size:14px; }
+  .step h4 { margin:2px 0 4px; font-family:var(--serif); font-weight:500; font-size:18px; }
+  .step p { margin:0 0 6px; font-size:14.5px; color:var(--g700); }
+  .step .path { font-family:var(--mono); font-size:11.5px; color:var(--g500); }
+
+  /* variant matrix */
+  .matrix { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  @media (max-width:760px) { .matrix { grid-template-columns:1fr; } }
+  .variant-label { font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); margin-bottom:8px; display:flex; gap:8px; align-items:center; }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--g500); display:inline-block; }
+  .dot.ok { background:var(--olive); } .dot.warn { background:#C9A24A; } .dot.bad { background:var(--clay); }
+  .view { background:var(--ivory); border:1.5px solid var(--g200); border-radius:10px; padding:12px 14px; font-family:var(--mono); font-size:12px; line-height:1.6; white-space:pre-wrap; color:var(--g700); }
+  .view b { color:var(--slate); }
+
+  /* checker demo */
+  .demo { padding:22px; }
+  .demo-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:760px) { .demo-grid { grid-template-columns:1fr; } }
+  label.f { display:block; font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); margin:0 0 6px; }
+  input[type=text], select { width:100%; font:inherit; font-family:var(--mono); font-size:14px; padding:9px 11px; border:1.5px solid var(--g300); border-radius:8px; background:var(--ivory); color:var(--slate); }
+  input[type=text]:focus, select:focus { outline:none; border-color:var(--clay); }
+  .presets { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 16px; }
+  button.pill { font:inherit; font-family:var(--mono); font-size:11.5px; padding:4px 10px; border:1.5px solid var(--g300); border-radius:999px; background:var(--paper); cursor:pointer; color:var(--g700); }
+  button.pill:hover, button.pill[aria-pressed=true] { border-color:var(--clay); color:var(--clay-d); }
+  .result { border-radius:10px; padding:14px 16px; font-family:var(--mono); font-size:13px; border:1.5px solid var(--g200); background:var(--ivory); min-height:110px; }
+  .result.ok { border-color:var(--olive); background:#F1F5EC; }
+  .result.fail { border-color:var(--clay); background:#FBEFEA; }
+  .result .big { font-family:var(--serif); font-size:26px; margin:4px 0 6px; }
+  .result .why { color:var(--g700); font-size:12.5px; }
+
+  /* diff */
+  .diff { border:1.5px solid var(--g200); border-radius:12px; overflow:hidden; background:var(--paper); }
+  .diff-file { display:flex; justify-content:space-between; gap:12px; padding:10px 14px; background:var(--g100); border-bottom:1.5px solid var(--g200); font-family:var(--mono); font-size:12px; }
+  .diff-row { display:grid; grid-template-columns:42px 18px 1fr; font-family:var(--mono); font-size:12px; line-height:1.65; }
+  .diff-row .ln { color:var(--g500); text-align:right; padding-right:8px; user-select:none; }
+  .diff-row .mark { text-align:center; color:var(--g500); }
+  .diff-row .code { white-space:pre-wrap; word-break:break-word; padding-right:12px; }
+  .diff-row.add { background:#EEF4E6; } .diff-row.add .mark { color:var(--olive); }
+  .diff-row.ctx .code { color:var(--g700); }
+  .risk { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 4px; }
+  .risk .chip { font-family:var(--mono); font-size:12px; border-radius:8px; display:inline-flex; align-items:center; gap:7px; }
+  .risk .chip.safe { background:#F1F5EC; border-color:#C7D3B5; }
+  .risk .chip.look { background:#F8F1DF; border-color:#E0CF9B; }
+  .risk .chip.att { background:#FBEAE3; border-color:var(--clay); }
+  .legend { font-size:12px; color:var(--g500); display:flex; gap:16px; flex-wrap:wrap; margin-top:6px; }
+
+  /* timeline */
+  .tl { position:relative; margin:8px 0 0; padding-left:30px; }
+  .tl::before { content:""; position:absolute; left:7px; top:6px; bottom:6px; width:1.5px; background:var(--g300); }
+  .tl-entry { position:relative; padding:0 0 22px; }
+  .tl-dot { position:absolute; left:-30px; top:4px; width:15px; height:15px; border-radius:50%; background:var(--g500); border:3px solid var(--ivory); }
+  .tl-entry.bad .tl-dot { background:var(--clay); } .tl-entry.good .tl-dot { background:var(--olive); }
+  .tl-time { display:inline-block; font-family:var(--mono); font-size:11.5px; background:var(--g100); border:1px solid var(--g200); border-radius:6px; padding:1px 8px; margin-bottom:6px; }
+  .tl-body { margin:0; font-size:14.5px; color:var(--g700); }
+  .tl-body b { color:var(--slate); }
+
+  /* bars */
+  .seg { display:inline-flex; border:1.5px solid var(--g300); border-radius:999px; overflow:hidden; background:var(--paper); margin-bottom:16px; }
+  .seg button { font:inherit; font-size:12.5px; padding:6px 16px; border:none; background:none; cursor:pointer; color:var(--g700); }
+  .seg button[aria-pressed=true] { background:var(--slate); color:#fff; }
+  .bar-row { display:grid; grid-template-columns:150px 1fr 90px; gap:12px; align-items:center; padding:7px 0; font-size:13px; }
+  @media (max-width:560px) { .bar-row { grid-template-columns:100px 1fr 70px; } }
+  .bar-row .name { font-family:var(--mono); font-size:12px; }
+  .track { height:14px; background:var(--g100); border-radius:7px; overflow:hidden; }
+  .fill { height:100%; background:var(--g300); border-radius:7px; transition:width .45s ease; }
+  .fill.me { background:var(--clay); } .fill.mine { background:#E9A890; }
+  .bar-row .val { font-family:var(--mono); font-size:12px; text-align:right; }
+
+  /* table */
+  table { width:100%; border-collapse:collapse; font-size:13.5px; background:var(--paper); border:1.5px solid var(--g200); border-radius:12px; overflow:hidden; }
+  th { text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); padding:10px 14px; background:var(--g100); border-bottom:1.5px solid var(--g200); }
+  td { padding:10px 14px; border-bottom:1px solid var(--g100); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  .pill-tag { font-family:var(--mono); font-size:11px; padding:2px 9px; border-radius:999px; border:1px solid var(--g300); background:var(--g100); white-space:nowrap; }
+  .pill-tag.read { background:#F1F5EC; border-color:#C7D3B5; } .pill-tag.write { background:#F8F1DF; border-color:#E0CF9B; } .pill-tag.dang { background:#FBEAE3; border-color:var(--clay); }
+  .table-wrap { overflow-x:auto; }
+
+  /* milestones */
+  .milestone { display:grid; grid-template-columns:110px 18px 1fr; gap:14px; padding-bottom:20px; }
+  @media (max-width:560px) { .milestone { grid-template-columns:70px 18px 1fr; } }
+  .when { font-family:var(--mono); font-size:11px; color:var(--g500); padding-top:3px; text-align:right; }
+  .dot-col { position:relative; }
+  .dot-col::before { content:""; position:absolute; left:8px; top:18px; bottom:-20px; width:1.5px; background:var(--g300); }
+  .milestone:last-child .dot-col::before { display:none; }
+  .dot-col i { display:block; width:15px; height:15px; border-radius:50%; background:var(--olive); margin-top:4px; }
+  .dot-col i.todo { background:var(--g300); } .dot-col i.now { background:var(--clay); }
+  .milestone h4 { margin:0 0 2px; font-family:var(--serif); font-weight:500; font-size:17px; }
+  .milestone p { margin:0 0 6px; font-size:14px; color:var(--g700); }
+
+  /* details */
+  details { background:var(--paper); border:1.5px solid var(--g200); border-radius:12px; margin-bottom:10px; }
+  summary { cursor:pointer; padding:14px 18px; font-family:var(--serif); font-size:17px; list-style:none; display:flex; justify-content:space-between; gap:12px; }
+  summary::-webkit-details-marker { display:none; }
+  summary::after { content:"+"; font-family:var(--mono); color:var(--clay); }
+  details[open] summary::after { content:"–"; }
+  details .body { padding:0 18px 16px; font-size:14.5px; color:var(--g700); }
+  details .body p { margin:0 0 8px; }
+
+  /* toc */
+  .toc { position:sticky; top:28px; align-self:start; padding-top:80px; }
+  .toc .lbl { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--g500); margin-bottom:10px; }
+  .toc a { display:block; font-size:13px; color:var(--g500); text-decoration:none; padding:4px 0 4px 12px; border-left:1.5px solid var(--g200); }
+  .toc a.on { color:var(--clay-d); border-left-color:var(--clay); }
+
+  .copy { font-family:var(--mono); font-size:11px; border:1.5px solid var(--g300); background:var(--paper); border-radius:6px; padding:2px 9px; cursor:pointer; color:var(--g700); }
+  .copy:hover { border-color:var(--clay); }
+  .banner { border:1.5px solid var(--clay); background:#FBEFEA; border-radius:12px; padding:12px 16px; font-size:14px; margin-top:16px; }
+  footer { margin-top:72px; padding-top:20px; border-top:1.5px solid var(--g300); font-size:13px; color:var(--g500); }
+</style>
+</head>
+<body>
+<div class="layout">
+<main>
+
+<header class="masthead">
+  <div class="eyebrow">Code walkthrough · pagebrief v0.3.0</div>
+  <h1>Any web page, as <em>compact</em> typed text.</h1>
+  <p class="intro">pagebrief is an MCP server that drives Chrome over raw CDP and hands an agent a short, typed view of a page. Repeat visits to a page type are answered from <em>page maps</em>: fields a large model located once and plain code checks on every load. This page walks through the code, the one bug worth a closer look, and what the benchmark has and has not shown.</p>
+  <div class="chips">
+    <a class="chip" href="#overview">Overview</a><a class="chip" href="#flow">Request path</a><a class="chip" href="#approaches">Design choices</a>
+    <a class="chip" href="#views">Page views</a><a class="chip" href="#maps">Page maps</a><a class="chip" href="#checker">Try the checker</a>
+    <a class="chip" href="#review">The number bug</a><a class="chip" href="#actions">Actions</a><a class="chip" href="#bench">Benchmark</a>
+    <a class="chip" href="#plan">Status</a><a class="chip" href="#gaps">Honest gaps</a>
+  </div>
+  <div class="tldr">
+    <div class="lbl">TL;DR</div>
+    <p>An agent calls <code>open</code>, <code>find</code> or <code>read</code>. The engine loads the page once over CDP, then either answers from a checked page map or falls back to a plain text view. On the repeat-visit track, mapped runs cost a median <b>$0.0032</b> per task against <b>$0.0113</b> for Playwright MCP, at the same 100% success, and about the same seconds. On the 60-task main track, pagebrief is 4.8x lighter on tokens than Playwright MCP and 1.1x cheaper per task, but about 2 seconds slower.</p>
+  </div>
+</header>
+
+<section id="overview">
+  <div class="sec-head"><span class="sec-num">01</span><h2>Overview</h2></div>
+  <p class="lead">About 6,100 lines of TypeScript, Node 22+, one runtime dependency besides <code>zod</code>: the MCP SDK. No Playwright or Puppeteer in the product; they exist only as benchmark baselines.</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">70</div><div class="stat-label">Tests</div><div class="stat-sub">at last checkpoint, lint clean</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Taught sites</div><div class="stat-sub">bench/maps/*.json</div></div>
+    <div class="stat"><div class="stat-num">5</div><div class="stat-label">Tools compared</div><div class="stat-sub">+ a mapped variant</div></div>
+    <div class="stat hot"><div class="stat-num">840/840</div><div class="stat-label">Benchmark runs</div><div class="stat-sub">three tracks, all complete</div></div>
+  </div>
+  <h3>Layout</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Folder</th><th>What lives there</th><th>Lines</th></tr>
+    <tr><td><code>src/cdp/</code></td><td>CDP client over Node's built-in WebSocket; Chrome launcher</td><td>~190</td></tr>
+    <tr><td><code>src/browser.ts</code></td><td>One tab: navigate, wait for network quiet, capture JSON, extract in one <code>Runtime.evaluate</code></td><td>250</td></tr>
+    <tr><td><code>src/page/</code></td><td>In-page extraction, JSON ranking, pure view functions behind <code>open</code> / <code>find</code> / <code>read</code></td><td>~540</td></tr>
+    <tr><td><code>src/maps/</code></td><td>Map types, URL patterns, the checker, store, teacher, student, sharing</td><td>~890</td></tr>
+    <tr><td><code>src/actions/</code></td><td>Risk labels and the in-page script for clicking and typing</td><td>~180</td></tr>
+    <tr><td><code>src/engine.ts</code>, <code>mcp.ts</code>, <code>cli.ts</code></td><td>Operations, the MCP server, the CLI</td><td>~530</td></tr>
+    <tr><td><code>bench/</code></td><td>Tasks with answer key, runner, scorer, report, teacher run, grader, campaign driver</td><td>~2,500</td></tr>
+  </table></div>
+</section>
+
+<section id="flow">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Request path</h2></div>
+  <p class="lead">The agent only ever talks to the MCP server. Everything under it is swappable.</p>
+  <div class="split">
+    <div class="card diagram">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Request path from agent to Chrome">
+        <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#87867F"/></marker></defs>
+        <rect class="box" x="20" y="40" width="130" height="50" rx="9"/><text x="85" y="62" text-anchor="middle" font-size="12" font-weight="600">Agent</text><text class="sub" x="85" y="78" text-anchor="middle">MCP client</text>
+        <rect class="box" x="200" y="40" width="130" height="50" rx="9"/><text x="265" y="62" text-anchor="middle" font-size="12" font-weight="600">mcp.ts</text><text class="sub" x="265" y="78" text-anchor="middle">open · find · read · do</text>
+        <rect class="box hot" x="380" y="40" width="130" height="50" rx="9"/><text x="445" y="62" text-anchor="middle" font-size="12" font-weight="600">engine.ts</text><text class="sub" x="445" y="78" text-anchor="middle">queue · cache · maps</text>
+        <rect class="box" x="560" y="40" width="150" height="50" rx="9"/><text x="635" y="62" text-anchor="middle" font-size="12" font-weight="600">browser.ts</text><text class="sub" x="635" y="78" text-anchor="middle">one tab, one extract</text>
+        <rect class="box" x="560" y="170" width="150" height="50" rx="9"/><text x="635" y="192" text-anchor="middle" font-size="12" font-weight="600">Chrome</text><text class="sub" x="635" y="208" text-anchor="middle">raw CDP · or --cdp-url</text>
+        <rect class="box cool" x="380" y="170" width="130" height="50" rx="9"/><text x="445" y="192" text-anchor="middle" font-size="12" font-weight="600">apply.ts</text><text class="sub" x="445" y="208" text-anchor="middle">the checker, no model</text>
+        <rect class="box" x="200" y="170" width="130" height="50" rx="9"/><text x="265" y="192" text-anchor="middle" font-size="12" font-weight="600">store.ts</text><text class="sub" x="265" y="208" text-anchor="middle">~/.pagebrief/maps</text>
+        <rect class="box" x="200" y="265" width="310" height="44" rx="9"/><text x="355" y="285" text-anchor="middle" font-size="12" font-weight="600">teacher.ts · student.ts</text><text class="sub" x="355" y="299" text-anchor="middle">Claude via claude -p, or Ollama</text>
+        <path class="edge" d="M150 65H198"/><path class="edge" d="M330 65H378"/><path class="edge" d="M510 65H558"/>
+        <path class="edge" d="M635 90V168"/><path class="edge" d="M445 90V168"/><path class="edge" d="M378 195H332"/>
+        <path class="edge dash" d="M265 265V222"/>
+        <text class="lbl" x="654" y="134">Page.navigate</text><text class="lbl" x="458" y="134">fields</text><text class="lbl" x="276" y="248">writes map</text>
+      </svg>
+    </div>
+    <div class="card"><ul class="keyfiles">
+      <div class="lbl">Key files</div>
+      <li><code>src/engine.ts</code><span>Queues opens, keeps the last 5 pages, applies maps, counts missing-field streaks.</span></li>
+      <li><code>src/browser.ts</code><span>Never calls <code>Runtime.enable</code>; one evaluate extracts everything.</span></li>
+      <li><code>src/maps/apply.ts</code><span>Reads and checks each field. A failure is never shown.</span></li>
+      <li><code>src/page/view.ts</code><span>Pure functions that render the text view, diffs and bot-check reports.</span></li>
+      <li><code>src/net/guard.ts</code><span>Refuses localhost and private networks unless allowed.</span></li>
+    </ul></div>
+  </div>
+
+  <h3>What happens on one <code>open</code></h3>
+  <div class="card" style="padding:4px 22px">
+    <div class="step"><div class="badge">1</div><div><h4>Guard the URL</h4><p>Localhost and private-network addresses are refused unless <code>--allow-private</code>. Behind a proxy the connected-address check is off, so redirect hops are checked by name.</p><div class="path">src/net/guard.ts</div></div></div>
+    <div class="step"><div class="badge">2</div><div><h4>Load once, capture JSON</h4><p>Navigate, wait for network quiet (event streams are not waited for), keep every JSON response the page loaded.</p><div class="path">src/browser.ts · load()</div></div></div>
+    <div class="step"><div class="badge">3</div><div><h4>Extract in one evaluate</h4><p>An in-page script returns visible text, meta, JSON-LD, forms and bot-check signals. Invisible text is dropped before the agent sees it.</p><div class="path">src/page/extract-script.ts</div></div></div>
+    <div class="step"><div class="badge">4</div><div><h4>Look for a map</h4><p>Maps are keyed by host and a URL path pattern: <code>*</code> is one segment, <code>**</code> the rest. No map means the plain view, and the agent can ask for <code>teach</code>.</p><div class="path">src/maps/pattern.ts · store.ts</div></div></div>
+    <div class="step"><div class="badge">5</div><div><h4>Check every field</h4><p>Each field is read from its location and checked for type and shape. All pass: typed fields. Any fail: the text view, never a guessed value.</p><div class="path">src/maps/apply.ts · applyMap()</div></div></div>
+  </div>
+</section>
+
+<section id="approaches">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Design choices</h2></div>
+  <p class="lead">Three ways to give an agent a page. Tool definitions are re-sent every turn, so short definitions and few turns matter as much as page size.</p>
+  <div class="grid3">
+    <div class="card approach"><div class="approach-head"><span class="num">A</span><h4>Accessibility snapshot</h4></div><p>What Playwright MCP returns: the whole page as a tree, plus a large tool set.</p><div class="tradeoffs"><div class="pro">Handles any interaction</div><div class="con">Largest definitions and pages; 25,620 median tokens in the repeat track</div></div></div>
+    <div class="card approach"><div class="approach-head"><span class="num">B</span><h4>Plain fetch</h4></div><p>No browser. One tool that downloads HTML and strips it.</p><div class="tradeoffs"><div class="pro">Cheapest to run; 5.9 s median</div><div class="con">No JavaScript, no captured JSON; live retail and job sites block it</div></div></div>
+    <div class="card approach pick"><div class="approach-head"><span class="num">C</span><h4>Typed view + maps</h4></div><p>Real browser, best data source first, checked fields on repeat visits.</p><div class="tradeoffs"><div class="pro">Cost drops sharply once a page type is mapped</div><div class="pro">A failed check degrades to text, not to a wrong answer</div><div class="con">First visit to a page type has no map; teaching spends a large-model call</div></div></div>
+  </div>
+  <p class="note" style="margin-top:14px">Source order for a page view: WebMCP tools, JSON the page loaded, forms and labels and text, a model only as a last resort and always behind an interface.</p>
+</section>
+
+<section id="views">
+  <div class="sec-head"><span class="sec-num">04</span><h2>Page views</h2></div>
+  <p class="lead">The same call can return four shapes. The agent is told which one it got.</p>
+  <div class="matrix">
+    <div class="card"><div class="variant-label"><span class="dot ok"></span>Mapped, all fields checked</div>
+<div class="view"><b>book_detail</b> (map, 7 fields ok)
+title: A Light in the Attic
+price: 51.77 GBP
+in_stock: true
+rating: 3</div></div>
+    <div class="card"><div class="variant-label"><span class="dot warn"></span>Text view, no map yet</div>
+<div class="view"><b>A Light in the Attic</b>
+£51.77 · In stock (22 available)
+Product description ...
+<span style="color:var(--g500)">teach this page type to cut cost next time</span></div></div>
+    <div class="card"><div class="variant-label"><span class="dot bad"></span>Check failed, fell back</div>
+<div class="view"><b>map check failed</b>: price "not a number"
+showing text view instead.
+<span style="color:var(--g500)">a wrong value is never shown</span></div></div>
+    <div class="card"><div class="variant-label"><span class="dot bad"></span>Blocked</div>
+<div class="view"><b>bot check</b> detected on this page
+no content returned.
+<span style="color:var(--g500)">bot checks and login walls are reported, not returned</span></div></div>
+  </div>
+  <p class="note" style="margin-top:14px">These four are illustrative renderings of the cases in <code>src/page/view.ts</code> and <code>src/engine.ts</code>, not captured output. Exact wording differs.</p>
+</section>
+
+<section id="maps">
+  <div class="sec-head"><span class="sec-num">05</span><h2>Page maps</h2></div>
+  <p class="lead">Four roles, kept apart on purpose: a <b>teacher</b> (large model, once per page type), a <b>checker</b> (plain code, every load), a <b>student</b> (small model, repairs), and an offline <b>grader</b> that labels failures.</p>
+  <div class="codehead"><span>bench/maps/hex.pm.json (shape, abridged)</span><button class="copy" data-copy="mapcode">Copy</button></div>
+<pre id="mapcode"><span class="cm">// a map is keyed by host and a path pattern</span>
+{
+  <span class="str">"host"</span>: <span class="str">"hex.pm"</span>,
+  <span class="str">"pattern"</span>: <span class="str">"/packages/*"</span>,
+  <span class="str">"fields"</span>: [
+    { <span class="str">"name"</span>: <span class="str">"downloads"</span>, <span class="str">"type"</span>: <span class="str">"integer"</span>,
+      <span class="str">"at"</span>: { <span class="str">"from"</span>: <span class="str">"text"</span>, <span class="str">"regex"</span>: <span class="str">"Downloads\\s+([\\d ,]+)"</span> },
+      <span class="str">"example"</span>: <span class="str">"..."</span> },
+    { <span class="str">"name"</span>: <span class="str">"license"</span>, <span class="str">"type"</span>: <span class="str">"string"</span>, <span class="str">"optional"</span>: <span class="kw">true</span>,
+      <span class="str">"at"</span>: { <span class="str">"from"</span>: <span class="str">"jsonld"</span>, <span class="str">"path"</span>: <span class="str">"license"</span> } }
+  ]
+}</pre>
+  <p class="note" style="margin-top:8px">Field names and location kinds are real (<code>src/maps/types.ts</code>); the values here are a sketch, so open the file in <code>bench/maps/</code> for the actual regexes.</p>
+  <h3>Where a field can live</h3>
+  <div class="chips" style="margin-top:0">
+    <span class="chip tag">doc · the page is a JSON document</span><span class="chip tag">json · a response the page loaded</span><span class="chip tag">jsonld · structured data</span><span class="chip tag">meta · a meta tag</span><span class="chip tag">text · label-anchored regex</span>
+  </div>
+  <h3>Rules the checker enforces</h3>
+  <div class="grid2">
+    <div class="card"><b>Fail closed.</b><p class="note" style="margin:6px 0 0">A missing or wrong-kind value fails the whole map and the text view is shown. Regexes with nested quantifiers are rejected (<code>unsafeRegex</code>) so a long page cannot stall the checker.</p></div>
+    <div class="card"><b>Optional is not free.</b><p class="note" style="margin:6px 0 0">An optional field may be absent, but if it is missing on 3 loads in a row the engine treats the location as broken (<code>OPTIONAL_MISS_LIMIT</code>).</p></div>
+    <div class="card"><b>Shared maps are screened.</b><p class="note" style="margin:6px 0 0">Export strips cost data and local hosts. Import is checked, marked <code>imported</code>, and never overwrites your own map unless <code>--replace</code>.</p></div>
+    <div class="card"><b>No false claims about the student.</b><p class="note" style="margin:6px 0 0">The small model is a prompted model. It is called "trained" or "distilled" only after a fine-tune on teacher labels exists; none does yet (<code>docs/finetune.md</code>).</p></div>
+  </div>
+</section>
+
+<section id="checker">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Try the checker</h2></div>
+  <p class="lead">A browser port of the number and type rules in <code>readField</code>. Type a value the way a page might print it and see what the checker would accept.</p>
+  <div class="card demo">
+    <div class="demo-grid">
+      <div>
+        <label class="f" for="inp">Text found at the field's location</label>
+        <input type="text" id="inp" value="168 360" autocomplete="off" spellcheck="false">
+        <div class="presets" id="presets"></div>
+        <label class="f" for="typ">Field type</label>
+        <select id="typ"><option>number</option><option>integer</option><option>date</option><option>url</option><option>boolean</option></select>
+      </div>
+      <div><label class="f">Checker says</label><div class="result" id="res"></div></div>
+    </div>
+  </div>
+  <p class="note" style="margin-top:10px">Port of <code>numberIn</code> and the type switch in <code>src/maps/apply.ts</code>. Shape regexes, lists and units are omitted.</p>
+</section>
+
+<section id="review">
+  <div class="sec-head"><span class="sec-num">07</span><h2>The number bug</h2></div>
+  <p class="lead">hex.pm prints download counts with a space between thousands. The first number parser read <code>168 360</code> as <b>168</b>, so the map "passed" with a wrong value. This is the change that fixed it (commit <code>5b17055</code>), followed by a re-teach of the maps.</p>
+  <div class="diff">
+    <div class="diff-file"><span>src/maps/apply.ts</span><span><span style="color:var(--olive)">number parser</span></span></div>
+    <div class="diff-row ctx"><span class="ln">93</span><span class="mark"></span><span class="code"><span class="kw">const</span> FIRST_NUMBER =</span></div>
+    <div class="diff-row ctx"><span class="ln">94</span><span class="mark"></span><span class="code">  /(?&lt;![A-Za-z0-9.])-?(?:\d{1,3}(?:[,    ']\d{3})+(?:\.\d+)?|\d{1,3}(?:\.\d{3})+,\d+|\d+(?:\.\d+)?)(?![A-Za-z0-9]|\.\d)/;</span></div>
+    <div class="diff-file" style="border-top:1.5px solid var(--g200)"><span>src/maps/maps.test.ts</span><span>tests added</span></div>
+    <div class="diff-row add"><span class="ln">+</span><span class="mark">+</span><span class="code">assert.equal(numberIn("168 360"), "168360", "a space between thousands, as hex.pm prints it");</span></div>
+    <div class="diff-row add"><span class="ln">+</span><span class="mark">+</span><span class="code">assert.equal(numberIn("16 118 downloads"), "16118");</span></div>
+    <div class="diff-row add"><span class="ln">+</span><span class="mark">+</span><span class="code">assert.equal(numberIn("1.234,56 EUR"), "1234.56");</span></div>
+    <div class="diff-row add"><span class="ln">+</span><span class="mark">+</span><span class="code">assert.equal(numberIn("22 available"), "22");</span></div>
+    <div class="diff-row add"><span class="ln">+</span><span class="mark">+</span><span class="code">assert.equal(numberIn("Page 2 of 40"), "2", "a space before a number that is not three digits is not a thousands separator");</span></div>
+    <div class="diff-row add"><span class="ln">+</span><span class="mark">+</span><span class="code">assert.equal(numberIn("v1.2.3"), null);</span></div>
+  </div>
+  <p class="note" style="margin-top:8px">The removed lines (the old parser) are not shown because the old text is not reproduced here; see <code>git show 5b17055</code>.</p>
+  <h3>Risk map for this change</h3>
+  <div class="risk">
+    <span class="chip att"><span class="dot bad"></span>src/maps/apply.ts</span>
+    <span class="chip look"><span class="dot warn"></span>bench/src/export-sft.ts</span>
+    <span class="chip safe"><span class="dot ok"></span>src/maps/maps.test.ts</span>
+    <span class="chip safe"><span class="dot ok"></span>docs/finetune.md</span>
+    <span class="chip look"><span class="dot warn"></span>bench/maps/*.json</span>
+  </div>
+  <div class="legend"><span>● safe</span><span>● worth a look</span><span>● needs attention</span></div>
+  <p class="note" style="margin-top:6px">The checker file is the one place a wrong value can reach an agent, so it gets the closest read. The SFT exporter ran on a few pages only.</p>
+
+  <h3>How it was found and closed</h3>
+  <div class="tl">
+    <div class="tl-entry bad"><span class="tl-dot"></span><span class="tl-time">found</span><p class="tl-body"><b>Wrong value passed the check.</b> The map for hex.pm read downloads as 16 instead of 16,461,343. Type and shape checks both accepted it.</p></div>
+    <div class="tl-entry"><span class="tl-dot"></span><span class="tl-time">cause</span><p class="tl-body">The number pattern treated a space as the end of the number. The first digits were a valid number, so nothing flagged it.</p></div>
+    <div class="tl-entry good"><span class="tl-dot"></span><span class="tl-time">5b17055</span><p class="tl-body"><b>Fixed with tests.</b> Space, non-breaking and thin-space separators are grouped when followed by three digits; European <code>1.234,56</code> is handled; <code>v1.2.3</code> and <code>ab12cd</code> are not numbers.</p></div>
+    <div class="tl-entry good"><span class="tl-dot"></span><span class="tl-time">d848005</span><p class="tl-body"><b>Maps re-taught</b> with the fixed parser and the map evaluation rerun on 2026-11-11, using <code>claude-opus-5-5</code>.</p></div>
+    <div class="tl-entry"><span class="tl-dot"></span><span class="tl-time">open</span><p class="tl-body">One finding remains: <code>rv-hn-2</code> has a missing <code>title</code> field on the final map (59 of 60 hits). Not yet investigated.</p></div>
+  </div>
+</section>
+
+<section id="actions">
+  <div class="sec-head"><span class="sec-num">08</span><h2>Actions</h2></div>
+  <p class="lead">The <code>do</code> tool exists only when actions are switched on. Every action carries a risk label and returns a diff of the page, so the agent sees what changed.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Label</th><th>Meaning</th><th>Source</th></tr>
+    <tr><td><span class="pill-tag read">read</span></td><td>Looks at something: follow a link, search, filter, sort, page.</td><td rowspan="3"><code>src/actions/risk.ts</code></td></tr>
+    <tr><td><span class="pill-tag write">write</span></td><td>Changes something on a server: a post, a save, a cart.</td></tr>
+    <tr><td><span class="pill-tag dang">dangerous</span></td><td>Moves money, deletes or closes things, signs out, or changes credentials.</td></tr>
+  </table></div>
+  <p class="note" style="margin-top:10px">Labels come from an element's words and its form, so they are a guard and advice, not a promise. Hard limits regardless of label: it never types into password fields and never uploads files. A policy (<code>actionPolicy</code>) sets the highest label an agent may run.</p>
+</section>
+
+<section id="bench">
+  <div class="sec-head"><span class="sec-num">09</span><h2>Benchmark</h2></div>
+  <p class="lead">Headless Claude Code (<code>claude -p</code>, Sonnet 5.5, effort medium) drives each tool as an MCP server on the same tasks. Cost is the CLI's list-price estimate; the runs used a subscription.</p>
+  <h3 style="margin-top:0">Repeat-visit track: 60 tasks, one repeat, 300 runs (complete)</h3>
+  <div class="seg" role="group" aria-label="Metric">
+    <button aria-pressed="true" data-m="cost">Cost per task</button><button aria-pressed="false" data-m="sec">Seconds</button><button aria-pressed="false" data-m="tok">Tokens</button>
+  </div>
+  <div id="bars"></div>
+  <p class="note" style="margin-top:12px">Every tool succeeded on all 60 tasks. Mapped runs are about 3.5x cheaper than Playwright MCP, but seconds are roughly level: plain fetch is fastest (5.9 s), and unmapped pagebrief is slower than Playwright by 0.3 s here. Cost was not the only thing that moved; the mean is 1.1 tool calls against 2.3.</p>
+  <h3>Main track: 60 tasks, one repeat, 300 runs (complete)</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Tool</th><th>Success</th><th>Median tokens</th><th>Median s</th><th>Median cost</th></tr>
+    <tr><td>playwright-mcp</td><td>100%</td><td>26,144</td><td>10.3</td><td>$0.0132</td></tr>
+    <tr><td>pagebrief</td><td>100%</td><td>5,412</td><td>12.3</td><td>$0.0120</td></tr>
+    <tr><td>agent-browser</td><td>100%</td><td>78,186</td><td>13.6</td><td>$0.0332</td></tr>
+    <tr><td>plain-fetch</td><td>92%</td><td>9,808</td><td>7.7</td><td>$0.0196</td></tr>
+    <tr><td>screenshot-browser</td><td>98%</td><td>9,105</td><td>13.2</td><td>$0.0158</td></tr>
+  </table></div>
+  <p class="note" style="margin-top:10px">pagebrief uses 4.8x fewer tokens than Playwright MCP and is 1.1x cheaper per task, but it is about 2 seconds slower here. It does not beat Playwright MCP on seconds in this track.</p>
+
+  <h3>Tool-search track: 60 tasks, one repeat, 4 tools (complete)</h3>
+  <p class="note">Tool search on: definitions load on demand. Tool definitions are then a smaller share of tokens, so the gap narrows.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Tool</th><th>Success</th><th>Median tokens</th><th>Median s</th><th>Median cost</th></tr>
+    <tr><td>playwright-mcp</td><td>100%</td><td>16,127</td><td>28.6</td><td>$0.0229</td></tr>
+    <tr><td>pagebrief</td><td>100%</td><td>8,472</td><td>27.0</td><td>$0.0139</td></tr>
+    <tr><td>agent-browser</td><td>100%</td><td>23,130</td><td>23.4</td><td>$0.0352</td></tr>
+    <tr><td>plain-fetch</td><td>93%</td><td>12,560</td><td>17.1</td><td>$0.0202</td></tr>
+  </table></div>
+  <p class="note" style="margin-top:10px">pagebrief is 1.6x cheaper than Playwright MCP and slightly faster. agent-browser and plain-fetch are faster still. Plain-fetch "ok" answers on some Hacker News tasks read NOT_FOUND; the scorer's treatment of those is under review, so treat its success rate as provisional.</p>
+  <p class="note" style="margin-top:10px">One repeat per task means these medians carry no confidence interval; treat gaps under about 10% as noise.</p>
+</section>
+
+<section id="plan">
+  <div class="sec-head"><span class="sec-num">10</span><h2>Status</h2></div>
+  <p class="lead">What is built and tested, what is running, and what has not been started.</p>
+  <div class="milestone"><div class="when">done</div><div class="dot-col"><i></i></div><div><h4>Engine, maps, actions</h4><p>CDP engine, block and login-wall reports, invisible-text drop, page maps with teacher / checker / student, action tools with risk labels, external browser via <code>--cdp-url</code>, map sharing.</p></div></div>
+  <div class="milestone"><div class="when">done</div><div class="dot-col"><i></i></div><div><h4>Benchmark tooling</h4><p>Repeat track, tool-search mode, screenshot and plain-fetch baselines, grader, map evaluation, campaign driver that waits across 5-hour windows.</p></div></div>
+  <div class="milestone"><div class="when">done</div><div class="dot-col"><i></i></div><div><h4>Benchmark campaign</h4><p>Repeat, main and tool-search tracks complete; reports in <code>docs/results/</code>.</p></div></div>
+  <div class="milestone"><div class="when">next</div><div class="dot-col"><i class="todo"></i></div><div><h4>Reports, README, release</h4><p>Commit reports to <code>docs/results/</code>, rewrite the README with the results, investigate <code>rv-hn-2</code>. The repo is private; making it public and the npm publish are the owner's call (npm needs their login).</p></div></div>
+  <div class="milestone"><div class="when">not started</div><div class="dot-col"><i class="todo"></i></div><div><h4>Fine-tuning, Lightpanda, demo</h4><p>The exporter exists but needs a GPU and more pages. <code>--cdp-url</code> is untested against Lightpanda itself. The README demo is not made.</p></div></div>
+</section>
+
+<section id="gaps">
+  <div class="sec-head"><span class="sec-num">11</span><h2>Decisions and honest gaps</h2></div>
+  <details open><summary>Why raw CDP, not Playwright</summary><div class="body"><p>The product has to sit under a stable agent-facing surface so the browser can change (Chrome now, Lightpanda later). Playwright and Puppeteer stay out of the product and appear only as baselines, so the comparison is fair.</p></div></details>
+  <details><summary>Why checks fail closed</summary><div class="body"><p>A wrong typed value is worse than a long text view: the agent trusts it. So any failed field sends the whole page back to the text view, and the hex.pm bug above is the reason the number rules are strict.</p></div></details>
+  <details><summary>Why <code>node:test</code> and not vitest</summary><div class="body"><p>vitest 5.1.0's peer dependencies broke <code>npm install</code> here.</p></div></details>
+  <details><summary>Known limits</summary><div class="body">
+    <p>Live retail and job sites block plain HTTP; openlibrary.org, pypi.org and metacpan.org serve bot checks to headless browsers (openlibrary was replaced by hex.pm in tasks v2).</p>
+    <p>Maps exist for six sites, taught by one teacher model. Generalising to unseen sites is not measured by the repeat track.</p>
+    <p>Concurrency 2 on a 16 GB machine; at 3, Windows ran out of memory after about 220 runs.</p>
+    <p>Not measured at all: a fine-tuned student, Lightpanda, and anything beyond one repeat.</p>
+  </div></details>
+</section>
+
+<footer>Layout and components follow the style of <a href="https://thariqs.github.io/html-effectiveness/">The unreasonable effectiveness of HTML — examples</a>: code understanding, code review, report, incident timeline, interactive explainer and implementation plan pages. Figures come from the repo and <code>results/</code>; nothing here is invented, and anything illustrative is marked.</footer>
+</main>
+
+<nav class="toc" aria-label="On this page">
+  <div class="lbl">On this page</div>
+  <a href="#overview">Overview</a><a href="#flow">Request path</a><a href="#approaches">Design choices</a><a href="#views">Page views</a><a href="#maps">Page maps</a><a href="#checker">Checker</a><a href="#review">Number bug</a><a href="#actions">Actions</a><a href="#bench">Benchmark</a><a href="#plan">Status</a><a href="#gaps">Gaps</a>
+</nav>
+</div>
+
+<script>
+// ---- checker demo (port of numberIn + type switch in src/maps/apply.ts)
+const FIRST_NUMBER = /(?<![A-Za-z0-9.])-?(?:\d{1,3}(?:[,    ']\d{3})+(?:\.\d+)?|\d{1,3}(?:\.\d{3})+,\d+|\d+(?:\.\d+)?)(?![A-Za-z0-9]|\.\d)/;
+function numberIn(s){const m=FIRST_NUMBER.exec(s);if(!m)return null;const raw=m[0];
+  const n=/^-?\d{1,3}(?:\.\d{3})+,\d+$/.test(raw)?raw.replace(/\./g,'').replace(',','.'):raw.replace(/[,    ']/g,'');
+  return Number.isFinite(Number(n))?n:null;}
+function check(text,type){
+  text=text.replace(/\s+/g,' ').trim();
+  if(!text)return {ok:false,why:'missing'};
+  if(type==='number'||type==='integer'){const n=numberIn(text);
+    if(n===null)return {ok:false,why:'"'+text.slice(0,40)+'" is not a number'};
+    if(type==='integer'&&!/^-?\d+$/.test(n))return {ok:false,why:n+' is not a whole number'};
+    return {ok:true,value:n};}
+  if(type==='date'){if(!/\b(1[89]|2[01])\d\d\b/.test(text)&&Number.isNaN(Date.parse(text)))return {ok:false,why:'"'+text.slice(0,40)+'" is not a date'};return {ok:true,value:text};}
+  if(type==='url'){try{const u=new URL(text,'https://example.com/').href;if(!/^https?:/.test(u))return {ok:false,why:'not a web URL'};return {ok:true,value:u};}catch{return {ok:false,why:'not a URL'};}}
+  if(type==='boolean'){if(!/^(true|false|yes|no)$/i.test(text))return {ok:false,why:'"'+text.slice(0,40)+'" is not true/false'};return {ok:true,value:text.toLowerCase()};}
+  return {ok:true,value:text};
+}
+const inp=document.getElementById('inp'),typ=document.getElementById('typ'),res=document.getElementById('res'),presets=document.getElementById('presets');
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function run(){const r=check(inp.value,typ.value);
+  res.className='result '+(r.ok?'ok':'fail');
+  res.innerHTML=r.ok?'<div class="why">shown to the agent as</div><div class="big">'+esc(r.value)+'</div><div class="why">field passes</div>'
+    :'<div class="why">check fails</div><div class="big">text view</div><div class="why">'+esc(r.why)+'. A wrong value is never shown.</div>';
+  [...presets.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===inp.value));}
+[['168 360','number'],['£1,299.50','number'],['1.234,56 EUR','number'],['22 available','integer'],['Page 2 of 40','number'],['v1.2.3','number'],['ab12cd','number'],['In stock','boolean']].forEach(([v,t])=>{
+  const b=document.createElement('button');b.className='pill';b.textContent=v;b.dataset.v=v;b.dataset.t=t;b.type='button';
+  b.onclick=()=>{inp.value=v;typ.value=t;run();};presets.appendChild(b);});
+inp.addEventListener('input',run);typ.addEventListener('change',run);run();
+
+// ---- benchmark bars (numbers from results/…tasks-repeat/report.md)
+const DATA=[
+ {n:'playwright-mcp',cost:0.0113,sec:8.5,tok:25620},
+ {n:'plain-fetch',cost:0.0096,sec:5.9,tok:4615},
+ {n:'screenshot-browser',cost:0.0098,sec:9.0,tok:4820},
+ {n:'pagebrief',cost:0.0089,sec:8.8,tok:4656,cls:'mine'},
+ {n:'pagebrief-mapped',cost:0.0032,sec:8.4,tok:3947,cls:'me'}];
+const FMT={cost:v=>'$'+v.toFixed(4),sec:v=>v.toFixed(1)+' s',tok:v=>v.toLocaleString('en-US')};
+const bars=document.getElementById('bars');
+function draw(m){const max=Math.max(...DATA.map(d=>d[m]));
+  bars.innerHTML=DATA.map(d=>'<div class="bar-row"><span class="name">'+d.n+'</span><div class="track"><div class="fill '+(d.cls||'')+'" style="width:'+(d[m]/max*100)+'%"></div></div><span class="val">'+FMT[m](d[m])+'</span></div>').join('');
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));}
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>draw(b.dataset.m));draw('cost');
+
+// ---- copy buttons
+document.querySelectorAll('.copy').forEach(b=>b.onclick=async()=>{
+  const pre=document.getElementById(b.dataset.copy);
+  try{await navigator.clipboard.writeText(pre.innerText);b.textContent='Copied';}catch{b.textContent='Select + copy';}
+  setTimeout(()=>b.textContent='Copy',1400);});
+
+// ---- scrollspy
+const links=[...document.querySelectorAll('.toc a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle('on',l.getAttribute('href')==='#'+e.target.id));}});},{rootMargin:'-20% 0px -70% 0px'});
+secs.forEach(s=>s&&io.observe(s));
+</script>
+</body>
+</html>

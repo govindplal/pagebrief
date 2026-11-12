@@ -1,0 +1,1374 @@
+{
+  "at": "2026-11-11T16:05:37.756Z",
+  "student": "claude-haiku-5-5",
+  "pages": [
+    {
+      "taskId": "rv-bts-1",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/in-her-wake_980/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "price_excl_tax"
+    },
+    {
+      "taskId": "rv-bts-2",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/how-music-works_979/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "availability"
+    },
+    {
+      "taskId": "rv-bts-3",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/foolproof-preserving-a-guide-to-small-batch-jams-jellies-pickles-condiments-and-more-a-foolproof-guide-to-making-small-batch-jams-jellies-pickles-condiments-and-more_978/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "upc"
+    },
+    {
+      "taskId": "rv-bts-4",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/chase-me-paris-nights-2_977/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "price_excl_tax"
+    },
+    {
+      "taskId": "rv-bts-5",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/black-dust_976/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "availability"
+    },
+    {
+      "taskId": "rv-bts-6",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/birdsong-a-story-in-pictures_975/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "upc"
+    },
+    {
+      "taskId": "rv-bts-7",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/americas-cradle-of-quarterbacks-western-pennsylvanias-football-factory-from-johnny-unitas-to-joe-montana_974/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "price_excl_tax"
+    },
+    {
+      "taskId": "rv-bts-8",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/aladdin-and-his-wonderful-lamp_973/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "availability"
+    },
+    {
+      "taskId": "rv-bts-9",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/worlds-elsewhere-journeys-around-shakespeares-globe_972/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "upc"
+    },
+    {
+      "taskId": "rv-bts-10",
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/wall-and-piece_971/index.html",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "price_excl_tax"
+    },
+    {
+      "taskId": "rv-qts-1",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/J-K-Rowling",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_date"
+    },
+    {
+      "taskId": "rv-qts-2",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Jane-Austen",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_place"
+    },
+    {
+      "taskId": "rv-qts-3",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Marilyn-Monroe",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_date"
+    },
+    {
+      "taskId": "rv-qts-4",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Andre-Gide",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_place"
+    },
+    {
+      "taskId": "rv-qts-5",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Thomas-A-Edison",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_date"
+    },
+    {
+      "taskId": "rv-qts-6",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Eleanor-Roosevelt",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_place"
+    },
+    {
+      "taskId": "rv-qts-7",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Steve-Martin",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_date"
+    },
+    {
+      "taskId": "rv-qts-8",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Bob-Marley",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_place"
+    },
+    {
+      "taskId": "rv-qts-9",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Dr-Seuss",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_date"
+    },
+    {
+      "taskId": "rv-qts-10",
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/author/Douglas-Adams",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "birth_place"
+    },
+    {
+      "taskId": "rv-hex-1",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/phoenix_html/3.3.0",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "last_updated"
+    },
+    {
+      "taskId": "rv-hex-2",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/ecto_sql/3.10.0",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "publisher"
+    },
+    {
+      "taskId": "rv-hex-3",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/telemetry/1.2.1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "license"
+    },
+    {
+      "taskId": "rv-hex-4",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/decimal/2.1.1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "last_updated"
+    },
+    {
+      "taskId": "rv-hex-5",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/mime/2.0.3",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "publisher"
+    },
+    {
+      "taskId": "rv-hex-6",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/plug_cowboy/2.6.1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "license"
+    },
+    {
+      "taskId": "rv-hex-7",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/postgrex/0.17.1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "last_updated"
+    },
+    {
+      "taskId": "rv-hex-8",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/castore/1.0.3",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "publisher"
+    },
+    {
+      "taskId": "rv-hex-9",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/tesla/1.7.0",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "license"
+    },
+    {
+      "taskId": "rv-hex-10",
+      "site": "hex.pm",
+      "url": "https://hex.pm/packages/absinthe/1.7.1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "last_updated"
+    },
+    {
+      "taskId": "rv-crates-1",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/tokio/1.32.0",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "license"
+    },
+    {
+      "taskId": "rv-crates-2",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/rand/0.8.5",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "release_date"
+    },
+    {
+      "taskId": "rv-crates-3",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/regex/1.9.6",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "release_date"
+    },
+    {
+      "taskId": "rv-crates-4",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/anyhow/1.0.75",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "license"
+    },
+    {
+      "taskId": "rv-crates-5",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/clap/4.4.6",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "minimum_rust_version"
+    },
+    {
+      "taskId": "rv-crates-6",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/syn/2.0.38",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "release_date"
+    },
+    {
+      "taskId": "rv-crates-7",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/log/0.4.20",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "license"
+    },
+    {
+      "taskId": "rv-crates-8",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/itoa/1.0.9",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "minimum_rust_version"
+    },
+    {
+      "taskId": "rv-crates-9",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/bytes/1.5.0",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "release_date"
+    },
+    {
+      "taskId": "rv-crates-10",
+      "site": "crates.io",
+      "url": "https://crates.io/crates/thiserror/1.0.49",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "license"
+    },
+    {
+      "taskId": "rv-arxiv-1",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1810.04805v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "submitted_date"
+    },
+    {
+      "taskId": "rv-arxiv-2",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/2005.14165v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "first_author"
+    },
+    {
+      "taskId": "rv-arxiv-3",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1512.03385v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "primary_category"
+    },
+    {
+      "taskId": "rv-arxiv-4",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1409.0473v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "submitted_date"
+    },
+    {
+      "taskId": "rv-arxiv-5",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1412.6980v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "first_author"
+    },
+    {
+      "taskId": "rv-arxiv-6",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/2010.11929v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "primary_category"
+    },
+    {
+      "taskId": "rv-arxiv-7",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1312.6114v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "submitted_date"
+    },
+    {
+      "taskId": "rv-arxiv-8",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1406.2661v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "first_author"
+    },
+    {
+      "taskId": "rv-arxiv-9",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/2112.10752v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "primary_category"
+    },
+    {
+      "taskId": "rv-arxiv-10",
+      "site": "arxiv.org",
+      "url": "https://arxiv.org/abs/1910.10683v1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "submitted_date"
+    },
+    {
+      "taskId": "rv-hn-1",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=1",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "points"
+    },
+    {
+      "taskId": "rv-hn-2",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=121003",
+      "outcome": "broken",
+      "failed": [
+        "title: missing"
+      ],
+      "answerField": "author"
+    },
+    {
+      "taskId": "rv-hn-3",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=3078128",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "comment_count"
+    },
+    {
+      "taskId": "rv-hn-4",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=363",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "points"
+    },
+    {
+      "taskId": "rv-hn-5",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=20",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "author"
+    },
+    {
+      "taskId": "rv-hn-6",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=25",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "points"
+    },
+    {
+      "taskId": "rv-hn-7",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=101",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "points"
+    },
+    {
+      "taskId": "rv-hn-8",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=13",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "author"
+    },
+    {
+      "taskId": "rv-hn-9",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=2",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "points"
+    },
+    {
+      "taskId": "rv-hn-10",
+      "site": "news.ycombinator.com",
+      "url": "https://news.ycombinator.com/item?id=3",
+      "outcome": "hit",
+      "failed": [],
+      "answerField": "points"
+    }
+  ],
+  "breakage": [
+    {
+      "site": "arxiv.org",
+      "field": "title",
+      "from": "meta",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0009345000000000001,
+        "seconds": 4.3,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "arxiv_id",
+      "from": "meta",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0009662000000000001,
+        "seconds": 4.5,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "first_author",
+      "from": "meta",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0009756,
+        "seconds": 5,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "submitted_date",
+      "from": "meta",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0013097,
+        "seconds": 7.6,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "pdf_url",
+      "from": "meta",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0008889000000000001,
+        "seconds": 3.9,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "primary_category",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0011771000000000002,
+        "seconds": 6.3,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "subjects",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0009738,
+        "seconds": 5.2,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "comments",
+      "from": "text",
+      "caught": 5,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0009692,
+        "seconds": 4.3,
+        "same": 4,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "doi",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0010432,
+        "seconds": 5.3,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "submitter",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0009962,
+        "seconds": 5.7,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "arxiv.org",
+      "field": "latest_version",
+      "from": "text",
+      "caught": 8,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0010178000000000001,
+        "seconds": 5.7,
+        "same": 7,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "upc",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.00046610000000000005,
+        "seconds": 4,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "product_type",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0004712,
+        "seconds": 4.7,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "price_excl_tax",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005311000000000001,
+        "seconds": 5,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "price_incl_tax",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005491000000000001,
+        "seconds": 5.6,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "tax",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005117,
+        "seconds": 3.2,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "availability",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005335,
+        "seconds": 5.1,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "stock_count",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005346000000000001,
+        "seconds": 5.8,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "number_of_reviews",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.00047700000000000005,
+        "seconds": 5.5,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "description",
+      "from": "meta",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": false,
+        "costUsd": null,
+        "seconds": 7.5,
+        "same": 0,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "books.toscrape.com",
+      "field": "created",
+      "from": "meta",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0004368,
+        "seconds": 4.2,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "crate_name",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0021233000000000003,
+        "seconds": 5.8,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "version",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0020656,
+        "seconds": 4.6,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "description",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0021107,
+        "seconds": 4.9,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "license",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.002058,
+        "seconds": 6.4,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "release_date",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0020983,
+        "seconds": 5.2,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "version_downloads",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0021141,
+        "seconds": 6.1,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "minimum_rust_version",
+      "from": "json",
+      "caught": 8,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0020657,
+        "seconds": 4.4,
+        "same": 0,
+        "different": 0,
+        "failed": 7
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "crate_size",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0020742000000000004,
+        "seconds": 4.9,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "yanked",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0020340000000000002,
+        "seconds": 4.4,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "repository",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0021138000000000003,
+        "seconds": 5.5,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "crates.io",
+      "field": "published_by",
+      "from": "json",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0020793,
+        "seconds": 6.3,
+        "same": 0,
+        "different": 0,
+        "failed": 9
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "package_name",
+      "from": "meta",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.00044970000000000003,
+        "seconds": 5.2,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "version",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005123,
+        "seconds": 4.8,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "description",
+      "from": "meta",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005013,
+        "seconds": 5.8,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "downloads_this_version",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.000608,
+        "seconds": 6.5,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "downloads_yesterday",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005795,
+        "seconds": 6.7,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "downloads_last_7_days",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005953,
+        "seconds": 6.2,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "downloads_all_time",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005803,
+        "seconds": 5.6,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "last_updated",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0004823,
+        "seconds": 4.1,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "license",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.00047120000000000007,
+        "seconds": 4.6,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "build_tools",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0004896000000000001,
+        "seconds": 5.1,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "hex.pm",
+      "field": "publisher",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005444,
+        "seconds": 6.4,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "news.ycombinator.com",
+      "field": "points",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0003989,
+        "seconds": 4.8,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "news.ycombinator.com",
+      "field": "author",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.000399,
+        "seconds": 5.8,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "news.ycombinator.com",
+      "field": "posted_date",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0005256,
+        "seconds": 5.1,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "news.ycombinator.com",
+      "field": "comment_count",
+      "from": "text",
+      "caught": 5,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0004419,
+        "seconds": 5,
+        "same": 4,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "quotes.toscrape.com",
+      "field": "author_name",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0006651000000000001,
+        "seconds": 5,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "quotes.toscrape.com",
+      "field": "birth_date",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0006681,
+        "seconds": 5.5,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "quotes.toscrape.com",
+      "field": "birth_year",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0006164,
+        "seconds": 5,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "quotes.toscrape.com",
+      "field": "birth_place",
+      "from": "text",
+      "caught": 10,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0006977,
+        "seconds": 6.1,
+        "same": 9,
+        "different": 0,
+        "failed": 0
+      }
+    },
+    {
+      "site": "quotes.toscrape.com",
+      "field": "birth_country",
+      "from": "text",
+      "caught": 8,
+      "wrong": 0,
+      "unaffected": 0,
+      "repair": {
+        "model": "claude-haiku-5-5",
+        "ok": true,
+        "costUsd": 0.0007490999999999999,
+        "seconds": 5.9,
+        "same": 7,
+        "different": 0,
+        "failed": 0
+      }
+    }
+  ]
+}
